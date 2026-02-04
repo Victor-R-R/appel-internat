@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
+import { aedSchema, validateRequest } from '@/lib/validation'
 
 /**
  * GET /api/admin/aed
@@ -46,12 +47,22 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password, nom, prenom, niveau } = body
 
-    // Validation
-    if (!email || !password || !nom || !prenom || !niveau) {
+    // Validation avec Zod
+    const validation = validateRequest(aedSchema, body)
+    if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: 'Tous les champs sont requis' },
+        { success: false, error: validation.error },
+        { status: 400 }
+      )
+    }
+
+    const { email, password, nom, prenom, niveau } = validation.data
+
+    // Le password doit être présent lors de la création
+    if (!password) {
+      return NextResponse.json(
+        { success: false, error: 'Le mot de passe est requis' },
         { status: 400 }
       )
     }

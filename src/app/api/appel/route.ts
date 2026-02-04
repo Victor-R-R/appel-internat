@@ -1,12 +1,7 @@
 // API pour sauvegarder un appel complet
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-
-type AppelData = {
-  eleveId: string
-  statut: string
-  observation: string
-}
+import { appelCompletSchema, validateRequest } from '@/lib/validation'
 
 /**
  * POST /api/appel
@@ -16,19 +11,21 @@ type AppelData = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { aedId, niveau, appels } = body
 
-    // Validation
-    if (!aedId || !niveau || !appels || !Array.isArray(appels)) {
+    // Validation avec Zod
+    const validation = validateRequest(appelCompletSchema, body)
+    if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: 'Données invalides' },
+        { success: false, error: validation.error },
         { status: 400 }
       )
     }
 
-    // Date du jour (minuit pour regrouper tous les appels du même jour)
+    const { aedId, niveau, appels } = validation.data
+
+    // Date du jour en UTC (évite les problèmes de timezone)
     const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    today.setUTCHours(0, 0, 0, 0)
 
     // Supprimer les appels existants pour ce niveau aujourd'hui
     // (permet de refaire l'appel si erreur)
@@ -42,7 +39,7 @@ export async function POST(request: NextRequest) {
     // Créer tous les nouveaux appels
     // createMany = batch insert (plus rapide que des INSERT individuels)
     const result = await prisma.appel.createMany({
-      data: appels.map((appel: AppelData) => ({
+      data: appels.map((appel) => ({
         eleveId: appel.eleveId,
         aedId,
         niveau,

@@ -33,9 +33,7 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (data.success) {
-        // Login réussi ! Stocker les infos dans localStorage
-        localStorage.setItem('user', JSON.stringify(data.user))
-
+        // Login réussi ! Le JWT est maintenant dans un cookie HttpOnly
         // Rediriger selon le rôle
         if (data.user.role === 'superadmin') {
           router.push('/admin/dashboard')

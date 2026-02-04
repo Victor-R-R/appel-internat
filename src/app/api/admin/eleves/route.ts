@@ -1,6 +1,7 @@
 // API CRUD pour les élèves (superadmin uniquement)
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { eleveSchema, validateRequest } from '@/lib/validation'
 
 /**
  * GET /api/admin/eleves
@@ -36,22 +37,17 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { nom, prenom, niveau, sexe } = body
 
-    // Validation
-    if (!nom || !prenom || !niveau || !sexe) {
+    // Validation avec Zod
+    const validation = validateRequest(eleveSchema, body)
+    if (!validation.success) {
       return NextResponse.json(
-        { success: false, error: 'Tous les champs sont requis' },
+        { success: false, error: validation.error },
         { status: 400 }
       )
     }
 
-    if (sexe !== 'M' && sexe !== 'F') {
-      return NextResponse.json(
-        { success: false, error: 'Sexe doit être M ou F' },
-        { status: 400 }
-      )
-    }
+    const { nom, prenom, niveau, sexe } = validation.data
 
     // Créer l'élève
     const eleve = await prisma.eleve.create({

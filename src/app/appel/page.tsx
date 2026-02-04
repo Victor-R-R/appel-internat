@@ -1,15 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useAuth, useLogout } from '@/hooks/useAuth'
 
 // Types TypeScript (comme des classes Python mais juste pour la structure)
 type User = {
   id: string
   email: string
-  nom: string
-  prenom: string
-  niveau: string
+  nom?: string
+  prenom?: string
+  niveau?: string | null
 }
 
 type Eleve = {
@@ -27,32 +27,27 @@ type AppelData = {
 }
 
 export default function AppelPage() {
-  const router = useRouter()
+  // Authentification via hook (récupère depuis JWT cookie)
+  const { user, loading: authLoading } = useAuth({
+    requireAuth: true,
+    redirectTo: '/login',
+  })
+  const logout = useLogout()
 
   // State
-  const [user, setUser] = useState<User | null>(null)
   const [eleves, setEleves] = useState<Eleve[]>([])
   const [appels, setAppels] = useState<Record<string, AppelData>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   /**
-   * Au chargement : vérifier si l'user est connecté
+   * Au chargement : charger les élèves quand user est disponible
    */
   useEffect(() => {
-    const userStr = localStorage.getItem('user')
-    if (!userStr) {
-      // Pas connecté → retour au login
-      router.push('/login')
-      return
+    if (user?.niveau) {
+      loadEleves(user.niveau)
     }
-
-    const userData = JSON.parse(userStr)
-    setUser(userData)
-
-    // Charger les élèves du niveau de l'AED
-    loadEleves(userData.niveau)
-  }, [router])
+  }, [user])
 
   /**
    * Charger les élèves d'un niveau
@@ -135,15 +130,7 @@ export default function AppelPage() {
     }
   }
 
-  /**
-   * Se déconnecter
-   */
-  const logout = () => {
-    localStorage.removeItem('user')
-    router.push('/login')
-  }
-
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-gray-600">Chargement...</p>
@@ -164,7 +151,7 @@ export default function AppelPage() {
                 Appel - {user.niveau}
               </h1>
               <p className="mt-1 text-sm text-gray-600">
-                {user.prenom} {user.nom} • {eleves.length} élèves
+                {user.email} • {eleves.length} élèves
               </p>
             </div>
             <button
