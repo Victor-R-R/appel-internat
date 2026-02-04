@@ -1,0 +1,69 @@
+// Schéma de base de données pour l'appel internat
+// SQLite pour commencer (simple, local, gratuit)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Utilisateurs : AED ou Superadmin
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // Hash bcrypt du mot de passe
+  nom       String
+  prenom    String
+  role      String   @default("aed") // "aed" ou "superadmin"
+  niveau    String?  // "6eme", "5eme", etc. NULL pour superadmin (accès à tous)
+  createdAt DateTime @default(now())
+
+  appels    Appel[]  // Relation : 1 utilisateur fait plusieurs appels
+}
+
+// Élèves de l'internat
+model Eleve {
+  id        String   @id @default(uuid())
+  nom       String
+  prenom    String
+  niveau    String   // "6eme", "5eme", etc.
+  sexe      String   // "M" ou "F"
+  actif     Boolean  @default(true) // Pour archiver les élèves partis
+  createdAt DateTime @default(now())
+
+  appels    Appel[]  // Relation : 1 élève a plusieurs appels
+}
+
+// Enregistrement de présence quotidien
+model Appel {
+  id          String   @id @default(uuid())
+  date        DateTime @default(now())
+  niveau      String   // Copié depuis eleve.niveau pour faciliter les filtres
+  statut      String   // "present", "acf", "absent"
+  observation String?  // Texte libre pour les remarques de la nuit
+
+  eleveId     String
+  eleve       Eleve    @relation(fields: [eleveId], references: [id], onDelete: Cascade)
+
+  aedId       String
+  aed         User     @relation(fields: [aedId], references: [id])
+
+  @@unique([eleveId, date]) // 1 élève = 1 seul appel par jour
+  @@index([date])           // Index pour requêtes rapides par date
+  @@index([niveau])         // Index pour filtrer par niveau
+}
+
+// Récapitulatifs générés par LLM
+model Recap {
+  id        String   @id @default(uuid())
+  date      DateTime // Date de la nuit concernée
+  niveau    String   // Niveau concerné par ce récap
+  contenu   String   // Résumé généré par Claude/GPT
+  createdAt DateTime @default(now()) // Quand le récap a été généré
+
+  @@unique([date, niveau]) // 1 récap par niveau par jour
+  @@index([date])
+}

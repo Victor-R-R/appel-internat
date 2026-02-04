@@ -1,0 +1,236 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+
+type User = {
+  id: string
+  email: string
+  nom: string
+  prenom: string
+  role: string
+  niveau: string | null
+}
+
+type Stats = {
+  totalAED: number
+  totalEleves: number
+  totalAppels: number
+  totalRecaps: number
+}
+
+export default function AdminDashboard() {
+  const router = useRouter()
+  const [user, setUser] = useState<User | null>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Vérifier que l'utilisateur est connecté ET superadmin
+    const userStr = localStorage.getItem('user')
+    if (!userStr) {
+      router.push('/login')
+      return
+    }
+
+    const userData = JSON.parse(userStr)
+
+    // Rediriger si pas superadmin
+    if (userData.role !== 'superadmin') {
+      alert('⛔ Accès réservé aux superadmins')
+      router.push('/appel')
+      return
+    }
+
+    setUser(userData)
+    loadStats()
+  }, [router])
+
+  const loadStats = async () => {
+    try {
+      const response = await fetch('/api/admin/stats')
+      const data = await response.json()
+
+      if (data.success) {
+        setStats(data.stats)
+      }
+    } catch (error) {
+      console.error('Erreur chargement stats:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const logout = () => {
+    localStorage.removeItem('user')
+    router.push('/login')
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-gray-600">Chargement...</p>
+      </div>
+    )
+  }
+
+  if (!user) return null
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg">
+        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white">
+                🔐 Administration
+              </h1>
+              <p className="mt-1 text-sm text-purple-100">
+                {user.prenom} {user.nom} • Superadmin
+              </p>
+            </div>
+            <button
+              onClick={logout}
+              className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30"
+            >
+              Déconnexion
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Statistiques */}
+        <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            title="AED"
+            value={stats?.totalAED || 0}
+            icon="👥"
+            color="bg-blue-500"
+          />
+          <StatCard
+            title="Élèves"
+            value={stats?.totalEleves || 0}
+            icon="🎓"
+            color="bg-green-500"
+          />
+          <StatCard
+            title="Appels"
+            value={stats?.totalAppels || 0}
+            icon="✓"
+            color="bg-orange-500"
+          />
+          <StatCard
+            title="Récaps"
+            value={stats?.totalRecaps || 0}
+            icon="📝"
+            color="bg-purple-500"
+          />
+        </div>
+
+        {/* Navigation */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <NavCard
+            title="Gérer les AED"
+            description="Ajouter, modifier ou supprimer des assistants d'éducation"
+            icon="👥"
+            href="/admin/aed"
+            color="bg-blue-50 border-blue-200 hover:bg-blue-100"
+          />
+          <NavCard
+            title="Gérer les élèves"
+            description="Ajouter, modifier ou archiver des élèves par niveau"
+            icon="🎓"
+            href="/admin/eleves"
+            color="bg-green-50 border-green-200 hover:bg-green-100"
+          />
+          <NavCard
+            title="Tous les récaps"
+            description="Consulter les récapitulatifs de tous les niveaux"
+            icon="📝"
+            href="/admin/recaps"
+            color="bg-purple-50 border-purple-200 hover:bg-purple-100"
+          />
+          <NavCard
+            title="Historique des appels"
+            description="Voir tous les appels effectués par niveau et date"
+            icon="📊"
+            href="/admin/appels"
+            color="bg-orange-50 border-orange-200 hover:bg-orange-100"
+          />
+          <NavCard
+            title="Paramètres LLM"
+            description="Configurer les récaps automatiques (Claude/GPT)"
+            icon="🤖"
+            href="/admin/llm"
+            color="bg-indigo-50 border-indigo-200 hover:bg-indigo-100"
+          />
+          <NavCard
+            title="Statistiques"
+            description="Rapports et analyses détaillées"
+            icon="📈"
+            href="/admin/stats"
+            color="bg-pink-50 border-pink-200 hover:bg-pink-100"
+          />
+        </div>
+      </main>
+    </div>
+  )
+}
+
+// Composant carte statistique
+function StatCard({
+  title,
+  value,
+  icon,
+  color,
+}: {
+  title: string
+  value: number
+  icon: string
+  color: string
+}) {
+  return (
+    <div className="overflow-hidden rounded-lg bg-white shadow">
+      <div className="p-6">
+        <div className="flex items-center">
+          <div className={`${color} flex h-12 w-12 items-center justify-center rounded-full text-2xl`}>
+            {icon}
+          </div>
+          <div className="ml-4">
+            <p className="text-sm font-medium text-gray-500">{title}</p>
+            <p className="text-3xl font-bold text-gray-900">{value}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Composant carte de navigation
+function NavCard({
+  title,
+  description,
+  icon,
+  href,
+  color,
+}: {
+  title: string
+  description: string
+  icon: string
+  href: string
+  color: string
+}) {
+  return (
+    <Link
+      href={href}
+      className={`block rounded-lg border-2 p-6 transition-all ${color}`}
+    >
+      <div className="mb-3 text-4xl">{icon}</div>
+      <h3 className="mb-2 text-lg font-semibold text-gray-900">{title}</h3>
+      <p className="text-sm text-gray-600">{description}</p>
+    </Link>
+  )
+}
