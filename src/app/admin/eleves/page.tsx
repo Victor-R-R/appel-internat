@@ -3,11 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-
-type User = {
-  id: string
-  role: string
-}
+import { useAuth, useLogout } from '@/hooks/useAuth'
 
 type Eleve = {
   id: string
@@ -21,7 +17,8 @@ type Eleve = {
 
 export default function GestionElevesPage() {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
+  const { user, loading: authLoading } = useAuth({ requireAuth: true, redirectTo: '/login' })
+  const logout = useLogout()
   const [eleves, setEleves] = useState<Eleve[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -38,22 +35,18 @@ export default function GestionElevesPage() {
   })
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user')
-    if (!userStr) {
-      router.push('/login')
-      return
-    }
+    if (authLoading) return
 
-    const userData = JSON.parse(userStr)
-    if (userData.role !== 'superadmin') {
+    if (user && user.role !== 'superadmin') {
       alert('⛔ Accès réservé aux superadmins')
       router.push('/appel')
       return
     }
 
-    setUser(userData)
-    loadEleves()
-  }, [router])
+    if (user) {
+      loadEleves()
+    }
+  }, [user, authLoading, router])
 
   const loadEleves = async () => {
     try {
@@ -178,7 +171,7 @@ export default function GestionElevesPage() {
     return true
   })
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-gray-600">Chargement...</p>
@@ -191,24 +184,25 @@ export default function GestionElevesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-green-600 to-teal-600 shadow-lg">
+      <header className="shadow-lg" style={{ background: 'linear-gradient(to right, #7EBEC5, #4d8dc1)' }}>
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <Link
                 href="/admin/dashboard"
-                className="mb-2 inline-block text-sm text-green-100 hover:text-white"
+                className="mb-2 inline-block text-sm text-white/80 hover:text-white"
               >
                 ← Retour au dashboard
               </Link>
               <h1 className="text-3xl font-bold text-white">🎓 Gestion des élèves</h1>
-              <p className="mt-1 text-sm text-green-100">
+              <p className="mt-1 text-sm text-white/80">
                 {eleves.filter((e) => e.actif).length} actifs • {eleves.filter((e) => !e.actif).length} archivés
               </p>
             </div>
             <button
               onClick={() => setShowForm(true)}
-              className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-green-600 hover:bg-green-50"
+              className="btn-primary rounded-md bg-white px-4 py-2 text-sm font-semibold hover:bg-white/90 transition-all"
+              style={{ color: '#7EBEC5' }}
             >
               + Ajouter un élève
             </button>
@@ -312,7 +306,8 @@ export default function GestionElevesPage() {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"
+                  className="btn-primary rounded-md px-4 py-2 text-sm font-semibold text-white transition-all"
+                  style={{ backgroundColor: '#7EBEC5' }}
                 >
                   {editingEleve ? 'Modifier' : 'Créer'}
                 </button>
@@ -359,7 +354,7 @@ export default function GestionElevesPage() {
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
-                    <span className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
+                    <span className="inline-flex rounded-full px-2 text-xs font-semibold leading-5" style={{ backgroundColor: '#e2e5ed', color: '#7EBEC5' }}>
                       {eleve.niveau}
                     </span>
                   </td>
@@ -370,7 +365,7 @@ export default function GestionElevesPage() {
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
                     {eleve.actif ? (
-                      <span className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
+                      <span className="inline-flex rounded-full px-2 text-xs font-semibold leading-5" style={{ backgroundColor: '#e2e5ed', color: '#7EBEC5' }}>
                         Actif
                       </span>
                     ) : (
@@ -382,13 +377,15 @@ export default function GestionElevesPage() {
                   <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                     <button
                       onClick={() => handleEdit(eleve)}
-                      className="mr-3 text-blue-600 hover:text-blue-900"
+                      className="mr-3 hover:opacity-80 transition-opacity"
+                      style={{ color: '#0C71C3' }}
                     >
                       Modifier
                     </button>
                     <button
                       onClick={() => handleToggleActif(eleve)}
-                      className="mr-3 text-orange-600 hover:text-orange-900"
+                      className="mr-3 hover:opacity-80 transition-opacity"
+                      style={{ color: '#4d8dc1' }}
                     >
                       {eleve.actif ? 'Archiver' : 'Réactiver'}
                     </button>

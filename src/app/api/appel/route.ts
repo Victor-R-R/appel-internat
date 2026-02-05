@@ -1,7 +1,90 @@
-// API pour sauvegarder un appel complet
+// API pour sauvegarder et récupérer les appels
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { appelCompletSchema, validateRequest } from '@/lib/validation'
+
+/**
+ * GET /api/appel?niveau=6eme&date=2024-01-15
+ * Récupère l'appel du jour pour un niveau
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const niveau = searchParams.get('niveau')
+    const dateParam = searchParams.get('date')
+
+    if (!niveau) {
+      return NextResponse.json(
+        { success: false, error: 'Niveau requis' },
+        { status: 400 }
+      )
+    }
+
+    // Date du jour ou date fournie
+    const date = dateParam ? new Date(dateParam) : new Date()
+    date.setUTCHours(0, 0, 0, 0)
+
+    // Récupérer les appels existants pour ce niveau et cette date
+    const appels = await prisma.appel.findMany({
+      where: {
+        niveau,
+        date,
+      },
+      include: {
+        eleve: {
+          select: {
+            id: true,
+            nom: true,
+            prenom: true,
+            niveau: true,
+            sexe: true,
+          },
+        },
+        aed: {
+          select: {
+            id: true,
+            nom: true,
+            prenom: true,
+          },
+        },
+      },
+      orderBy: {
+        eleve: { nom: 'asc' },
+      },
+    })
+
+    // Si aucun appel trouvé
+    if (appels.length === 0) {
+      return NextResponse.json({
+        success: true,
+        appels: [],
+        exists: false,
+      })
+    }
+
+    // Formater les données pour le frontend
+    const formattedAppels = appels.map((appel) => ({
+      eleveId: appel.eleveId,
+      statut: appel.statut,
+      observation: appel.observation || '',
+      eleve: appel.eleve,
+    }))
+
+    return NextResponse.json({
+      success: true,
+      appels: formattedAppels,
+      exists: true,
+      aed: appels[0].aed, // Info de l'AED qui a fait l'appel
+      date: appels[0].date,
+    })
+  } catch (error) {
+    console.error('Erreur récupération appel:', error)
+    return NextResponse.json(
+      { success: false, error: 'Erreur serveur' },
+      { status: 500 }
+    )
+  }
+}
 
 /**
  * POST /api/appel

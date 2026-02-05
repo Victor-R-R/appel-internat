@@ -56,8 +56,13 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-lg">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Appel Internat</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <h1 className="text-3xl font-bold" style={{ color: '#0C71C3' }}>
+            Appel Internat
+          </h1>
+          <p className="mt-2 text-sm font-medium" style={{ color: '#4d8dc1' }}>
+            Internat d&apos;Excellence de Sourdun
+          </p>
+          <p className="mt-1 text-sm text-gray-600">
             Connectez-vous avec votre compte AED
           </p>
         </div>
@@ -82,7 +87,10 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors"
+              style={{ borderColor: '#e2e5ed' }}
+              onFocus={(e) => e.target.style.borderColor = '#0C71C3'}
+              onBlur={(e) => e.target.style.borderColor = '#e2e5ed'}
               placeholder="aed.6eme@internat.fr"
             />
           </div>
@@ -98,7 +106,10 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors"
+              style={{ borderColor: '#e2e5ed' }}
+              onFocus={(e) => e.target.style.borderColor = '#0C71C3'}
+              onBlur={(e) => e.target.style.borderColor = '#e2e5ed'}
               placeholder="••••••••"
             />
           </div>

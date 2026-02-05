@@ -1,16 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useAuth, useLogout } from '@/hooks/useAuth'
 
 type User = {
   id: string
   email: string
-  nom: string
-  prenom: string
   role: string
-  niveau: string | null
+  niveau?: string | null
 }
 
 type Stats = {
@@ -21,31 +19,19 @@ type Stats = {
 }
 
 export default function AdminDashboard() {
-  const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
+  const { user, loading: authLoading } = useAuth({
+    requireAuth: true,
+    redirectTo: '/login',
+  })
+  const logout = useLogout()
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Vérifier que l'utilisateur est connecté ET superadmin
-    const userStr = localStorage.getItem('user')
-    if (!userStr) {
-      router.push('/login')
-      return
+    if (user) {
+      loadStats()
     }
-
-    const userData = JSON.parse(userStr)
-
-    // Rediriger si pas superadmin
-    if (userData.role !== 'superadmin') {
-      alert('⛔ Accès réservé aux superadmins')
-      router.push('/appel')
-      return
-    }
-
-    setUser(userData)
-    loadStats()
-  }, [router])
+  }, [user])
 
   const loadStats = async () => {
     try {
@@ -62,12 +48,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const logout = () => {
-    localStorage.removeItem('user')
-    router.push('/login')
-  }
-
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-gray-600">Chargement...</p>
@@ -80,20 +61,20 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg">
+      <header className="shadow-lg" style={{ background: 'linear-gradient(to right, #0C71C3, #4d8dc1)' }}>
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-white">
                 🔐 Administration
               </h1>
-              <p className="mt-1 text-sm text-purple-100">
-                {user.prenom} {user.nom} • Superadmin
+              <p className="mt-1 text-sm text-white/80">
+                {user.email} • Superadmin • Internat d&apos;Excellence de Sourdun
               </p>
             </div>
             <button
               onClick={logout}
-              className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30"
+              className="btn-primary rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all"
             >
               Déconnexion
             </button>
@@ -103,30 +84,18 @@ export default function AdminDashboard() {
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Statistiques */}
-        <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
           <StatCard
             title="AED"
             value={stats?.totalAED || 0}
             icon="👥"
-            color="bg-blue-500"
+            color="bg-[#0C71C3]"
           />
           <StatCard
             title="Élèves"
             value={stats?.totalEleves || 0}
             icon="🎓"
-            color="bg-green-500"
-          />
-          <StatCard
-            title="Appels"
-            value={stats?.totalAppels || 0}
-            icon="✓"
-            color="bg-orange-500"
-          />
-          <StatCard
-            title="Récaps"
-            value={stats?.totalRecaps || 0}
-            icon="📝"
-            color="bg-purple-500"
+            color="bg-[#7EBEC5]"
           />
         </div>
 
@@ -137,42 +106,42 @@ export default function AdminDashboard() {
             description="Ajouter, modifier ou supprimer des assistants d'éducation"
             icon="👥"
             href="/admin/aed"
-            color="bg-blue-50 border-blue-200 hover:bg-blue-100"
+            color="bg-[#e2e5ed] border-[#0C71C3]/30 hover:bg-[#d5dae8]"
           />
           <NavCard
             title="Gérer les élèves"
             description="Ajouter, modifier ou archiver des élèves par niveau"
             icon="🎓"
             href="/admin/eleves"
-            color="bg-green-50 border-green-200 hover:bg-green-100"
+            color="bg-[#e2e5ed] border-[#7EBEC5]/30 hover:bg-[#d5dae8]"
           />
           <NavCard
             title="Tous les récaps"
             description="Consulter les récapitulatifs de tous les niveaux"
             icon="📝"
             href="/admin/recaps"
-            color="bg-purple-50 border-purple-200 hover:bg-purple-100"
+            color="bg-[#e2e5ed] border-[#4d8dc1]/30 hover:bg-[#d5dae8]"
           />
           <NavCard
             title="Historique des appels"
             description="Voir tous les appels effectués par niveau et date"
             icon="📊"
             href="/admin/appels"
-            color="bg-orange-50 border-orange-200 hover:bg-orange-100"
+            color="bg-[#e2e5ed] border-[#0C71C3]/30 hover:bg-[#d5dae8]"
           />
           <NavCard
             title="Paramètres LLM"
             description="Configurer les récaps automatiques (Claude/GPT)"
             icon="🤖"
             href="/admin/llm"
-            color="bg-indigo-50 border-indigo-200 hover:bg-indigo-100"
+            color="bg-[#e2e5ed] border-[#7EBEC5]/30 hover:bg-[#d5dae8]"
           />
           <NavCard
             title="Statistiques"
             description="Rapports et analyses détaillées"
             icon="📈"
             href="/admin/stats"
-            color="bg-pink-50 border-pink-200 hover:bg-pink-100"
+            color="bg-[#e2e5ed] border-[#4d8dc1]/30 hover:bg-[#d5dae8]"
           />
         </div>
       </main>

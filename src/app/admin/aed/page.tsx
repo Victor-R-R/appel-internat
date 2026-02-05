@@ -3,8 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useAuth, useLogout } from '@/hooks/useAuth'
 
-type User = {
+type AED = {
   id: string
   email: string
   nom: string
@@ -13,11 +14,10 @@ type User = {
   niveau: string | null
 }
 
-type AED = User
-
 export default function GestionAEDPage() {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
+  const { user, loading: authLoading } = useAuth({ requireAuth: true, redirectTo: '/login' })
+  const logout = useLogout()
   const [aeds, setAEDs] = useState<AED[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -33,22 +33,18 @@ export default function GestionAEDPage() {
   })
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user')
-    if (!userStr) {
-      router.push('/login')
-      return
-    }
+    if (authLoading) return
 
-    const userData = JSON.parse(userStr)
-    if (userData.role !== 'superadmin') {
+    if (user && user.role !== 'superadmin') {
       alert('⛔ Accès réservé aux superadmins')
       router.push('/appel')
       return
     }
 
-    setUser(userData)
-    loadAEDs()
-  }, [router])
+    if (user) {
+      loadAEDs()
+    }
+  }, [user, authLoading, router])
 
   const loadAEDs = async () => {
     try {
@@ -143,7 +139,7 @@ export default function GestionAEDPage() {
     resetForm()
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-gray-600">Chargement...</p>
@@ -156,22 +152,23 @@ export default function GestionAEDPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
+      <header className="shadow-lg" style={{ background: 'linear-gradient(to right, #0C71C3, #4d8dc1)' }}>
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <Link
                 href="/admin/dashboard"
-                className="mb-2 inline-block text-sm text-blue-100 hover:text-white"
+                className="mb-2 inline-block text-sm text-white/80 hover:text-white"
               >
                 ← Retour au dashboard
               </Link>
               <h1 className="text-3xl font-bold text-white">👥 Gestion des AED</h1>
-              <p className="mt-1 text-sm text-blue-100">{aeds.length} AED enregistrés</p>
+              <p className="mt-1 text-sm text-white/80">{aeds.length} AED enregistrés</p>
             </div>
             <button
               onClick={() => setShowForm(true)}
-              className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-50"
+              className="btn-primary rounded-md bg-white px-4 py-2 text-sm font-semibold hover:bg-white/90 transition-all"
+              style={{ color: '#0C71C3' }}
             >
               + Ajouter un AED
             </button>
@@ -255,7 +252,8 @@ export default function GestionAEDPage() {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                  className="btn-primary rounded-md px-4 py-2 text-sm font-semibold text-white transition-all"
+                  style={{ backgroundColor: '#0C71C3' }}
                 >
                   {editingAED ? 'Modifier' : 'Créer'}
                 </button>
@@ -302,14 +300,15 @@ export default function GestionAEDPage() {
                     <div className="text-sm text-gray-500">{aed.email}</div>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
-                    <span className="inline-flex rounded-full bg-blue-100 px-2 text-xs font-semibold leading-5 text-blue-800">
+                    <span className="inline-flex rounded-full px-2 text-xs font-semibold leading-5" style={{ backgroundColor: '#e2e5ed', color: '#0C71C3' }}>
                       {aed.niveau}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                     <button
                       onClick={() => handleEdit(aed)}
-                      className="mr-3 text-blue-600 hover:text-blue-900"
+                      className="mr-3 hover:opacity-80 transition-opacity"
+                      style={{ color: '#0C71C3' }}
                     >
                       Modifier
                     </button>

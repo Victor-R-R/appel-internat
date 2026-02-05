@@ -39,6 +39,7 @@ export default function AppelPage() {
   const [appels, setAppels] = useState<Record<string, AppelData>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [appelExists, setAppelExists] = useState(false)
 
   /**
    * Au chargement : charger les élèves quand user est disponible
@@ -50,19 +51,46 @@ export default function AppelPage() {
   }, [user])
 
   /**
-   * Charger les élèves d'un niveau
+   * Charger les élèves d'un niveau et l'appel existant du jour
    */
   const loadEleves = async (niveau: string) => {
     try {
-      const response = await fetch(`/api/eleves?niveau=${niveau}`)
-      const data = await response.json()
+      // Charger les élèves
+      const elevesResponse = await fetch(`/api/eleves?niveau=${niveau}`)
+      const elevesData = await elevesResponse.json()
 
-      if (data.success) {
-        setEleves(data.eleves)
+      if (!elevesData.success) {
+        console.error('Erreur chargement élèves')
+        return
+      }
 
-        // Initialiser tous les appels à "present" par défaut
+      setEleves(elevesData.eleves)
+
+      // Charger l'appel existant du jour
+      const today = new Date().toISOString().split('T')[0]
+      const appelResponse = await fetch(`/api/appel?niveau=${niveau}&date=${today}`)
+      const appelData = await appelResponse.json()
+
+      // Si un appel existe déjà aujourd'hui
+      if (appelData.success && appelData.exists && appelData.appels.length > 0) {
+        setAppelExists(true)
+
+        // Remplir avec les données existantes
+        const existingAppels: Record<string, AppelData> = {}
+        appelData.appels.forEach((appel: any) => {
+          existingAppels[appel.eleveId] = {
+            eleveId: appel.eleveId,
+            statut: appel.statut,
+            observation: appel.observation || '',
+          }
+        })
+        setAppels(existingAppels)
+      } else {
+        // Pas d'appel existant : initialiser à "present" par défaut
+        setAppelExists(false)
+
         const initialAppels: Record<string, AppelData> = {}
-        data.eleves.forEach((eleve: Eleve) => {
+        elevesData.eleves.forEach((eleve: Eleve) => {
           initialAppels[eleve.id] = {
             eleveId: eleve.id,
             statut: 'present',
@@ -72,7 +100,7 @@ export default function AppelPage() {
         setAppels(initialAppels)
       }
     } catch (error) {
-      console.error('Erreur chargement élèves:', error)
+      console.error('Erreur chargement données:', error)
     } finally {
       setLoading(false)
     }
@@ -119,7 +147,11 @@ export default function AppelPage() {
       const data = await response.json()
 
       if (data.success) {
-        alert('✅ Appel enregistré avec succès !')
+        const message = appelExists
+          ? '✅ Appel modifié avec succès !'
+          : '✅ Appel enregistré avec succès !'
+        alert(message)
+        setAppelExists(true) // Maintenant l'appel existe
       } else {
         alert('❌ Erreur : ' + data.error)
       }
@@ -143,20 +175,25 @@ export default function AppelPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="shadow-lg" style={{ background: 'linear-gradient(to right, #0C71C3, #4d8dc1)' }}>
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-3xl font-bold text-white">
                 Appel - {user.niveau}
               </h1>
-              <p className="mt-1 text-sm text-gray-600">
-                {user.email} • {eleves.length} élèves
+              <p className="mt-1 text-sm text-white/80">
+                {user.email} • {eleves.length} élèves • Internat d&apos;Excellence de Sourdun
               </p>
+              {appelExists && (
+                <p className="mt-2 inline-block rounded-md bg-white/20 px-3 py-1 text-xs font-medium text-white">
+                  ✓ Appel déjà effectué aujourd&apos;hui - Vous pouvez le modifier jusqu&apos;à minuit
+                </p>
+              )}
             </div>
             <button
               onClick={logout}
-              className="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300"
+              className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all"
             >
               Déconnexion
             </button>
@@ -188,31 +225,34 @@ export default function AppelPage() {
               <div className="mb-4 flex gap-2">
                 <button
                   onClick={() => updateStatut(eleve.id, 'present')}
-                  className={`rounded-md px-4 py-2 text-sm font-medium ${
-                    appels[eleve.id]?.statut === 'present'
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                  className="rounded-md px-4 py-2 text-sm font-medium transition-all"
+                  style={{
+                    backgroundColor: appels[eleve.id]?.statut === 'present' ? '#7EBEC5' : '#e2e5ed',
+                    color: appels[eleve.id]?.statut === 'present' ? 'white' : '#333333'
+                  }}
                 >
                   ✓ Présent
                 </button>
                 <button
                   onClick={() => updateStatut(eleve.id, 'acf')}
-                  className={`rounded-md px-4 py-2 text-sm font-medium ${
-                    appels[eleve.id]?.statut === 'acf'
-                      ? 'bg-orange-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
+                  className="rounded-md px-4 py-2 text-sm font-medium transition-all"
+                  style={{
+                    backgroundColor: appels[eleve.id]?.statut === 'acf' ? '#4d8dc1' : '#e2e5ed',
+                    color: appels[eleve.id]?.statut === 'acf' ? 'white' : '#333333'
+                  }}
                 >
                   ACF
                 </button>
                 <button
                   onClick={() => updateStatut(eleve.id, 'absent')}
-                  className={`rounded-md px-4 py-2 text-sm font-medium ${
+                  className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${
                     appels[eleve.id]?.statut === 'absent'
                       ? 'bg-red-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      : 'text-gray-700 hover:bg-gray-300'
                   }`}
+                  style={{
+                    backgroundColor: appels[eleve.id]?.statut === 'absent' ? '#dc2626' : '#e2e5ed'
+                  }}
                 >
                   ✗ Absent
                 </button>
@@ -223,7 +263,10 @@ export default function AppelPage() {
                 value={appels[eleve.id]?.observation || ''}
                 onChange={(e) => updateObservation(eleve.id, e.target.value)}
                 placeholder="Observations (facultatif)..."
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-md border px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors"
+                style={{ borderColor: '#e2e5ed' }}
+                onFocus={(e) => e.currentTarget.style.borderColor = '#0C71C3'}
+                onBlur={(e) => e.currentTarget.style.borderColor = '#e2e5ed'}
                 rows={2}
               />
             </div>
@@ -235,9 +278,17 @@ export default function AppelPage() {
           <button
             onClick={saveAppel}
             disabled={saving}
-            className="rounded-md bg-blue-600 px-8 py-3 text-base font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400"
+            className="btn-primary rounded-md px-8 py-3 text-base font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
+            style={{
+              backgroundColor: saving ? '#cccccc' : '#0C71C3',
+              cursor: saving ? 'not-allowed' : 'pointer'
+            }}
           >
-            {saving ? 'Enregistrement...' : '💾 Enregistrer l\'appel'}
+            {saving
+              ? 'Enregistrement...'
+              : appelExists
+              ? '💾 Modifier l\'appel'
+              : '💾 Enregistrer l\'appel'}
           </button>
         </div>
       </main>
