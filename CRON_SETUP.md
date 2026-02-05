@@ -5,16 +5,27 @@ Générer automatiquement chaque matin à 6h un récapitulatif IA des observatio
 
 ## Prérequis
 
-### 1. Clé API Claude (Anthropic)
+### 1. Clé API IA (OpenAI ou Anthropic)
 
-Créer une clé API sur https://console.anthropic.com/
+Le système supporte deux providers d'IA :
 
-Ajouter dans votre fichier `.env` :
+**Option A : OpenAI (ChatGPT) - Recommandé**
+- Créer une clé sur https://platform.openai.com/api-keys
+- Ajouter dans `.env` :
+```bash
+OPENAI_API_KEY=sk-proj-...
+```
+- Modèle utilisé : **GPT-4o**
+
+**Option B : Claude (Anthropic)**
+- Créer une clé sur https://console.anthropic.com/
+- Ajouter dans `.env` :
 ```bash
 ANTHROPIC_API_KEY=sk-ant-api03-...
 ```
+- Modèle utilisé : **Claude 3.5 Sonnet**
 
-> **Note** : Sans cette clé, le système utilisera un fallback basique (sans IA)
+> **Note** : Si les deux clés sont présentes, OpenAI est prioritaire. Sans clé, le système utilise un fallback basique (sans IA)
 
 ### 2. URL de production
 
@@ -142,12 +153,19 @@ Les logs de génération sont visibles dans la console :
 
 ## Coûts IA
 
-- **Modèle** : Claude 3.5 Sonnet
+### OpenAI (GPT-4o)
+- **Tokens par récap** : ~500-1000 tokens
+- **Coût estimé** : ~$0.005-0.01 par récap
+- **Coût mensuel** : ~$0.15-0.30 (30 jours)
+
+### Claude (Anthropic)
 - **Tokens par récap** : ~500-1000 tokens
 - **Coût estimé** : ~$0.01-0.02 par récap
 - **Coût mensuel** : ~$0.30-0.60 (30 jours)
 
-Le fallback sans IA est utilisé si la clé API n'est pas configurée ou en cas d'erreur.
+> OpenAI est environ 2x moins cher que Claude pour ce cas d'usage
+
+Le fallback sans IA est utilisé si aucune clé API n'est configurée ou en cas d'erreur.
 
 ## Dépannage
 

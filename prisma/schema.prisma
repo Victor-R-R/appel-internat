@@ -1,25 +1,26 @@
 // Schéma de base de données pour l'appel internat
-// SQLite pour commencer (simple, local, gratuit)
+// PostgreSQL pour production (Supabase) / SQLite pour dev local
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// Utilisateurs : AED ou Superadmin
+// Utilisateurs : AED, CPE, Manager ou Superadmin
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String // Hash bcrypt du mot de passe
   nom       String
   prenom    String
-  role      String   @default("aed") // "aed" ou "superadmin"
-  niveau    String? // "6eme", "5eme", etc. NULL pour superadmin (accès à tous)
-  createdAt DateTime @default(now())
+  role       String   @default("aed") // "aed", "cpe", "manager" ou "superadmin"
+  niveau     String? // "6eme", "5eme", etc. NULL pour cpe/manager/superadmin (accès à tous)
+  sexeGroupe String? // "M" ou "F" - quel groupe (garçons/filles) l'AED gère. NULL pour cpe/manager/superadmin
+  createdAt  DateTime @default(now())
 
   appels Appel[] // Relation : 1 utilisateur fait plusieurs appels
 }
