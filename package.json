@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && prisma db push --accept-data-loss && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx src/scripts/seed.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:push": "prisma db push"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",
