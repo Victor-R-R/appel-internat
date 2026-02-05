@@ -61,8 +61,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Routes admin (nécessitent role superadmin)
+  // Routes admin (nécessitent role cpe, manager ou superadmin)
   const adminRoutes = ['/admin', '/api/admin']
+  const adminRoles = ['cpe', 'manager', 'superadmin']
   if (adminRoutes.some((route) => pathname.startsWith(route))) {
     if (!session) {
       if (pathname.startsWith('/api')) {
@@ -74,10 +75,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    if (session.role !== 'superadmin') {
+    if (!adminRoles.includes(session.role)) {
       if (pathname.startsWith('/api')) {
         return NextResponse.json(
-          { success: false, error: 'Accès interdit - Superadmin requis' },
+          { success: false, error: 'Accès interdit - Droits admin requis (CPE/Manager/Superadmin)' },
           { status: 403 }
         )
       }
@@ -93,7 +94,7 @@ export async function middleware(request: NextRequest) {
     if (!session) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-    if (session.role === 'superadmin') {
+    if (adminRoles.includes(session.role)) {
       return NextResponse.redirect(new URL('/admin/dashboard', request.url))
     }
     return NextResponse.redirect(new URL('/appel', request.url))

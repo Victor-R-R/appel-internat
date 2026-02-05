@@ -69,7 +69,7 @@ export default function AdminDashboard() {
                 🔐 Administration
               </h1>
               <p className="mt-1 text-sm text-white/80">
-                {user.email} • Superadmin • Internat d&apos;Excellence de Sourdun
+                {user.email} • {user.role === 'superadmin' ? 'Superadmin' : user.role === 'cpe' ? 'CPE' : user.role === 'manager' ? 'Manager' : 'AED'} • Internat d&apos;Excellence de Sourdun
               </p>
             </div>
             <button
@@ -86,7 +86,7 @@ export default function AdminDashboard() {
         {/* Statistiques */}
         <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
           <StatCard
-            title="AED"
+            title="Utilisateurs"
             value={stats?.totalAED || 0}
             icon="👥"
             color="bg-[#0C71C3]"
@@ -101,27 +101,7 @@ export default function AdminDashboard() {
 
         {/* Navigation */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <NavCard
-            title="Gérer les AED"
-            description="Ajouter, modifier ou supprimer des assistants d'éducation"
-            icon="👥"
-            href="/admin/aed"
-            color="bg-[#e2e5ed] border-[#0C71C3]/30 hover:bg-[#d5dae8]"
-          />
-          <NavCard
-            title="Gérer les élèves"
-            description="Ajouter, modifier ou archiver des élèves par niveau"
-            icon="🎓"
-            href="/admin/eleves"
-            color="bg-[#e2e5ed] border-[#7EBEC5]/30 hover:bg-[#d5dae8]"
-          />
-          <NavCard
-            title="Tous les récaps"
-            description="Consulter les récapitulatifs de tous les niveaux"
-            icon="📝"
-            href="/admin/recaps"
-            color="bg-[#e2e5ed] border-[#4d8dc1]/30 hover:bg-[#d5dae8]"
-          />
+          {/* Historique des appels - Tous */}
           <NavCard
             title="Historique des appels"
             description="Voir tous les appels effectués par niveau et date"
@@ -129,20 +109,59 @@ export default function AdminDashboard() {
             href="/admin/appels"
             color="bg-[#e2e5ed] border-[#0C71C3]/30 hover:bg-[#d5dae8]"
           />
+
+          {/* Récaps - Tous */}
           <NavCard
-            title="Paramètres LLM"
-            description="Configurer les récaps automatiques (Claude/GPT)"
-            icon="🤖"
-            href="/admin/llm"
-            color="bg-[#e2e5ed] border-[#7EBEC5]/30 hover:bg-[#d5dae8]"
-          />
-          <NavCard
-            title="Statistiques"
-            description="Rapports et analyses détaillées"
-            icon="📈"
-            href="/admin/stats"
+            title="Tous les récaps"
+            description="Consulter les récapitulatifs de tous les niveaux"
+            icon="📝"
+            href="/admin/recaps"
             color="bg-[#e2e5ed] border-[#4d8dc1]/30 hover:bg-[#d5dae8]"
           />
+
+          {/* Gestion utilisateurs - Superadmin uniquement */}
+          {user.role === 'superadmin' && (
+            <NavCard
+              title="Gérer les utilisateurs"
+              description="Ajouter, modifier ou supprimer des utilisateurs (AED, CPE, Manager)"
+              icon="👥"
+              href="/admin/aed"
+              color="bg-[#e2e5ed] border-[#0C71C3]/30 hover:bg-[#d5dae8]"
+            />
+          )}
+
+          {/* Gestion élèves - Superadmin uniquement */}
+          {user.role === 'superadmin' && (
+            <NavCard
+              title="Gérer les élèves"
+              description="Ajouter, modifier ou archiver des élèves par niveau"
+              icon="🎓"
+              href="/admin/eleves"
+              color="bg-[#e2e5ed] border-[#7EBEC5]/30 hover:bg-[#d5dae8]"
+            />
+          )}
+
+          {/* Paramètres LLM - Superadmin uniquement */}
+          {user.role === 'superadmin' && (
+            <NavCard
+              title="Paramètres LLM"
+              description="Configurer les récaps automatiques (Claude/GPT)"
+              icon="🤖"
+              href="/admin/llm"
+              color="bg-[#e2e5ed] border-[#7EBEC5]/30 hover:bg-[#d5dae8]"
+            />
+          )}
+
+          {/* Statistiques - Superadmin uniquement */}
+          {user.role === 'superadmin' && (
+            <NavCard
+              title="Statistiques"
+              description="Rapports et analyses détaillées"
+              icon="📈"
+              href="/admin/stats"
+              color="bg-[#e2e5ed] border-[#4d8dc1]/30 hover:bg-[#d5dae8]"
+            />
+          )}
         </div>
       </main>
     </div>

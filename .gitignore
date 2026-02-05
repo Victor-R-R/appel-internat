@@ -48,3 +48,4 @@ prisma/*.db-journal
 
 # claude code settings
 .claude/
+.env*.local

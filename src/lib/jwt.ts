@@ -14,6 +14,7 @@ export type JWTPayload = {
   email: string
   role: string
   niveau?: string | null
+  sexeGroupe?: string | null
 }
 
 /**
@@ -99,4 +100,13 @@ export async function isAuthenticated(): Promise<boolean> {
 export async function isSuperAdmin(): Promise<boolean> {
   const session = await getSession()
   return session?.role === 'superadmin'
+}
+
+/**
+ * Vérifie si l'utilisateur a un accès admin complet
+ * (CPE, Manager ou Superadmin peuvent voir tous les historiques/stats/récaps)
+ */
+export async function hasAdminAccess(): Promise<boolean> {
+  const session = await getSession()
+  return ['cpe', 'manager', 'superadmin'].includes(session?.role || '')
 }

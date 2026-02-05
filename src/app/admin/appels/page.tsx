@@ -50,20 +50,22 @@ export default function HistoriqueAppelsPage() {
     new Date().toISOString().split('T')[0]
   )
   const [selectedNiveau, setSelectedNiveau] = useState<string>('tous')
+  const [selectedSexe, setSelectedSexe] = useState<string>('tous')
   const [searchQuery, setSearchQuery] = useState<string>('')
 
   useEffect(() => {
     if (user) {
       loadAppels()
     }
-  }, [user, selectedDate, selectedNiveau])
+  }, [user, selectedDate, selectedNiveau, selectedSexe])
 
   const loadAppels = async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       if (selectedDate) params.append('date', selectedDate)
-      if (selectedNiveau) params.append('niveau', selectedNiveau)
+      if (selectedNiveau && selectedNiveau !== 'tous') params.append('niveau', selectedNiveau)
+      if (selectedSexe && selectedSexe !== 'tous') params.append('sexe', selectedSexe)
 
       const response = await fetch(`/api/admin/appels?${params}`)
       const data = await response.json()
@@ -182,7 +184,7 @@ export default function HistoriqueAppelsPage() {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Filtres */}
         <div className="mb-6 rounded-lg bg-white p-6 shadow">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {/* Filtre Date */}
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">
@@ -192,7 +194,7 @@ export default function HistoriqueAppelsPage() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
               />
             </div>
 
@@ -203,8 +205,14 @@ export default function HistoriqueAppelsPage() {
               </label>
               <select
                 value={selectedNiveau}
-                onChange={(e) => setSelectedNiveau(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                onChange={(e) => {
+                  setSelectedNiveau(e.target.value)
+                  // Réinitialiser le filtre sexe si on choisit "tous"
+                  if (e.target.value === 'tous') {
+                    setSelectedSexe('tous')
+                  }
+                }}
+                className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
               >
                 {NIVEAUX.map((niveau) => (
                   <option key={niveau} value={niveau}>
@@ -213,6 +221,25 @@ export default function HistoriqueAppelsPage() {
                 ))}
               </select>
             </div>
+
+            {/* Filtre Sexe - Apparaît uniquement si un niveau spécifique est sélectionné */}
+            {selectedNiveau !== 'tous' && (
+              <div>
+                <label className="mb-2 block text-sm font-medium text-gray-700">
+                  👥 Groupe
+                </label>
+                <select
+                  value={selectedSexe}
+                  onChange={(e) => setSelectedSexe(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                  style={{ borderColor: '#0C71C3' }}
+                >
+                  <option value="tous">👥 Tous (Filles + Garçons)</option>
+                  <option value="F">👧 Filles</option>
+                  <option value="M">👦 Garçons</option>
+                </select>
+              </div>
+            )}
 
             {/* Recherche élève */}
             <div>
@@ -224,7 +251,7 @@ export default function HistoriqueAppelsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Nom ou prénom..."
-                className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
               />
             </div>
           </div>

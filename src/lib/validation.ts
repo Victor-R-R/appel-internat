@@ -19,7 +19,7 @@ const niveauxValides = [
 const statutsValides = ['present', 'acf', 'absent'] as const
 
 // Rôles utilisateur autorisés
-const rolesValides = ['aed', 'superadmin'] as const
+const rolesValides = ['aed', 'cpe', 'manager', 'superadmin'] as const
 
 // Validation login
 export const loginSchema = z.object({
@@ -51,7 +51,7 @@ export const eleveSchema = z.object({
   actif: z.boolean().optional().default(true),
 })
 
-// Validation d'un AED
+// Validation d'un utilisateur (AED, CPE, Manager, Superadmin)
 export const aedSchema = z.object({
   email: z.string().email('Email invalide'),
   password: z
@@ -68,7 +68,10 @@ export const aedSchema = z.object({
     .max(50, 'Le prénom ne peut pas dépasser 50 caractères'),
   niveau: z.enum(niveauxValides, {
     message: 'Niveau invalide',
-  }),
+  }).optional(),
+  sexeGroupe: z.enum(['M', 'F'], {
+    message: 'Sexe du groupe doit être M ou F',
+  }).optional(),
   role: z.enum(rolesValides).optional().default('aed'),
 })
 

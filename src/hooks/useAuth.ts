@@ -13,6 +13,7 @@ type User = {
   email: string
   role: string
   niveau?: string | null
+  sexeGroupe?: string | null
 }
 
 export function useAuth(options?: { redirectTo?: string; requireAuth?: boolean }) {

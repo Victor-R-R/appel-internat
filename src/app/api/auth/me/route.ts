@@ -26,6 +26,7 @@ export async function GET() {
         email: session.email,
         role: session.role,
         niveau: session.niveau,
+        sexeGroupe: session.sexeGroupe,
       },
     })
   } catch (error) {

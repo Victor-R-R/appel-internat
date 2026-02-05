@@ -24,6 +24,7 @@ export default function GestionElevesPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingEleve, setEditingEleve] = useState<Eleve | null>(null)
   const [filterNiveau, setFilterNiveau] = useState<string>('tous')
+  const [filterSexe, setFilterSexe] = useState<string>('tous')
   const [filterActif, setFilterActif] = useState<string>('actifs')
 
   // Form state
@@ -37,9 +38,10 @@ export default function GestionElevesPage() {
   useEffect(() => {
     if (authLoading) return
 
+    // Seul Superadmin peut gérer les élèves
     if (user && user.role !== 'superadmin') {
-      alert('⛔ Accès réservé aux superadmins')
-      router.push('/appel')
+      alert('⛔ Accès réservé aux Superadmins')
+      router.push('/admin/dashboard')
       return
     }
 
@@ -166,6 +168,7 @@ export default function GestionElevesPage() {
   // Filtrage
   const elevesFiltered = eleves.filter((e) => {
     if (filterNiveau !== 'tous' && e.niveau !== filterNiveau) return false
+    if (filterSexe !== 'tous' && e.sexe !== filterSexe) return false
     if (filterActif === 'actifs' && !e.actif) return false
     if (filterActif === 'archives' && e.actif) return false
     return true
@@ -201,7 +204,7 @@ export default function GestionElevesPage() {
             </div>
             <button
               onClick={() => setShowForm(true)}
-              className="btn-primary rounded-md bg-white px-4 py-2 text-sm font-semibold hover:bg-white/90 transition-all"
+              className="rounded-md bg-white px-4 py-2 text-sm font-semibold hover:bg-white/90 transition-all"
               style={{ color: '#7EBEC5' }}
             >
               + Ajouter un élève
@@ -212,10 +215,16 @@ export default function GestionElevesPage() {
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Filtres */}
-        <div className="mb-6 flex gap-4">
+        <div className="mb-6 flex flex-wrap gap-4">
           <select
             value={filterNiveau}
-            onChange={(e) => setFilterNiveau(e.target.value)}
+            onChange={(e) => {
+              setFilterNiveau(e.target.value)
+              // Réinitialiser le filtre sexe si on choisit "tous"
+              if (e.target.value === 'tous') {
+                setFilterSexe('tous')
+              }
+            }}
             className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"
           >
             <option value="tous">Tous les niveaux</option>
@@ -227,6 +236,19 @@ export default function GestionElevesPage() {
             <option value="1ere">1ère</option>
             <option value="Term">Terminale</option>
           </select>
+
+          {filterNiveau !== 'tous' && (
+            <select
+              value={filterSexe}
+              onChange={(e) => setFilterSexe(e.target.value)}
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"
+              style={{ borderColor: '#7EBEC5' }}
+            >
+              <option value="tous">👥 Tous (Filles + Garçons)</option>
+              <option value="F">👧 Filles</option>
+              <option value="M">👦 Garçons</option>
+            </select>
+          )}
 
           <select
             value={filterActif}
@@ -306,7 +328,7 @@ export default function GestionElevesPage() {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="btn-primary rounded-md px-4 py-2 text-sm font-semibold text-white transition-all"
+                  className="rounded-md px-4 py-2 text-sm font-semibold text-white transition-all hover:opacity-90"
                   style={{ backgroundColor: '#7EBEC5' }}
                 >
                   {editingEleve ? 'Modifier' : 'Créer'}

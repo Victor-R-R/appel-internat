@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 /**
- * GET /api/admin/appels?date=2024-01-15&niveau=6eme
+ * GET /api/admin/appels?date=2024-01-15&niveau=6eme&sexe=F
  * Récupère l'historique des appels avec filtres
  */
 export async function GET(request: NextRequest) {
@@ -11,20 +11,36 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const dateParam = searchParams.get('date')
     const niveauParam = searchParams.get('niveau')
+    const sexeParam = searchParams.get('sexe')
 
     // Construire les filtres
     const where: any = {}
 
-    // Filtre par date si fourni
+    // Filtre par date si fourni (plage sur toute la journée)
     if (dateParam) {
       const date = new Date(dateParam)
-      date.setUTCHours(0, 0, 0, 0)
-      where.date = date
+      const startOfDay = new Date(date)
+      startOfDay.setHours(0, 0, 0, 0)
+
+      const endOfDay = new Date(date)
+      endOfDay.setHours(23, 59, 59, 999)
+
+      where.date = {
+        gte: startOfDay,
+        lte: endOfDay,
+      }
     }
 
     // Filtre par niveau si fourni
     if (niveauParam && niveauParam !== 'tous') {
       where.niveau = niveauParam
+    }
+
+    // Filtre par sexe si fourni (via la relation eleve)
+    if (sexeParam && sexeParam !== 'tous') {
+      where.eleve = {
+        sexe: sexeParam,
+      }
     }
 
     // Récupérer les appels avec les informations de l'élève et de l'AED

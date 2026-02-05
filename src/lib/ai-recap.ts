@@ -1,9 +1,15 @@
-// Génération de récaps avec l'API Claude
+// Génération de récaps avec OpenAI (ChatGPT) ou Claude
+import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+// Initialiser les clients selon les clés disponibles
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null
+
+const anthropic = process.env.ANTHROPIC_API_KEY
+  ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  : null
 
 type ObservationData = {
   niveau: string
@@ -17,14 +23,43 @@ type ObservationData = {
 }
 
 /**
- * Génère un récap intelligent avec Claude
+ * Génère un récap intelligent avec IA (OpenAI prioritaire, puis Claude, puis fallback)
  * à partir des observations de la nuit
  */
 export async function genererRecapAvecIA(
   observations: ObservationData[],
   date: Date
 ): Promise<string> {
-  // Formater les données pour Claude
+  // Préparer le prompt
+  const prompt = construirePrompt(observations, date)
+
+  try {
+    // Priorité 1 : OpenAI (ChatGPT)
+    if (openai) {
+      console.log('[IA] Utilisation de OpenAI GPT-4o')
+      return await genererAvecOpenAI(prompt)
+    }
+
+    // Priorité 2 : Claude
+    if (anthropic) {
+      console.log('[IA] Utilisation de Claude 3.5 Sonnet')
+      return await genererAvecClaude(prompt)
+    }
+
+    // Priorité 3 : Fallback sans IA
+    console.log('[IA] Aucune clé API configurée, utilisation du fallback')
+    return genererRecapBasique(observations, date)
+  } catch (error) {
+    console.error('[IA] Erreur génération:', error)
+    console.log('[IA] Utilisation du fallback')
+    return genererRecapBasique(observations, date)
+  }
+}
+
+/**
+ * Construit le prompt pour l'IA
+ */
+function construirePrompt(observations: ObservationData[], date: Date): string {
   const observationsParNiveau: Record<string, ObservationData[]> = {}
 
   observations.forEach((obs) => {
@@ -34,7 +69,6 @@ export async function genererRecapAvecIA(
     observationsParNiveau[obs.niveau].push(obs)
   })
 
-  // Construire le prompt
   const dateStr = date.toLocaleDateString('fr-FR', {
     weekday: 'long',
     day: 'numeric',
@@ -57,7 +91,7 @@ export async function genererRecapAvecIA(
     }
   })
 
-  const prompt = `Tu es un assistant de vie scolaire dans un internat. Tu dois générer un récapitulatif professionnel et concis des observations de la nuit du ${dateStr}.
+  return `Tu es un assistant de vie scolaire dans un internat. Tu dois générer un récapitulatif professionnel et concis des observations de la nuit du ${dateStr}.
 
 Voici toutes les observations par niveau :
 ${observationsTexte}
@@ -79,40 +113,77 @@ Format attendu :
 ⚠️ Points d'attention : [s'il y en a]
 
 Reste factuel, professionnel et concis. Maximum 300 mots.`
+}
 
-  try {
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-    })
+/**
+ * Génération avec OpenAI (GPT-4o)
+ */
+async function genererAvecOpenAI(prompt: string): Promise<string> {
+  if (!openai) throw new Error('OpenAI non initialisé')
 
-    const contenu = message.content[0]
-    if (contenu.type === 'text') {
-      return contenu.text
-    }
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    messages: [
+      {
+        role: 'system',
+        content:
+          'Tu es un assistant de vie scolaire professionnel. Tu génères des récapitulatifs clairs, concis et structurés.',
+      },
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+    max_tokens: 1024,
+    temperature: 0.7,
+  })
 
-    throw new Error('Réponse invalide de Claude')
-  } catch (error) {
-    console.error('Erreur génération IA:', error)
-
-    // Fallback : génération basique sans IA
-    return genererRecapBasique(observationsParNiveau, date)
+  const contenu = completion.choices[0]?.message?.content
+  if (!contenu) {
+    throw new Error('Réponse vide de OpenAI')
   }
+
+  return contenu
+}
+
+/**
+ * Génération avec Claude (Anthropic)
+ */
+async function genererAvecClaude(prompt: string): Promise<string> {
+  if (!anthropic) throw new Error('Claude non initialisé')
+
+  const message = await anthropic.messages.create({
+    model: 'claude-3-5-sonnet-20241022',
+    max_tokens: 1024,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
+  })
+
+  const contenu = message.content[0]
+  if (contenu.type === 'text') {
+    return contenu.text
+  }
+
+  throw new Error('Réponse invalide de Claude')
 }
 
 /**
  * Fallback : génération simple sans IA
  */
-function genererRecapBasique(
-  observationsParNiveau: Record<string, ObservationData[]>,
-  date: Date
-): string {
+function genererRecapBasique(observations: ObservationData[], date: Date): string {
+  const observationsParNiveau: Record<string, ObservationData[]> = {}
+
+  observations.forEach((obs) => {
+    if (!observationsParNiveau[obs.niveau]) {
+      observationsParNiveau[obs.niveau] = []
+    }
+    observationsParNiveau[obs.niveau].push(obs)
+  })
+
   const sections: string[] = []
   const dateStr = date.toLocaleDateString('fr-FR', {
     weekday: 'long',

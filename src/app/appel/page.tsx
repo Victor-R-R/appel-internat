@@ -1,15 +1,18 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth, useLogout } from '@/hooks/useAuth'
 
 // Types TypeScript (comme des classes Python mais juste pour la structure)
 type User = {
   id: string
   email: string
+  role: string
   nom?: string
   prenom?: string
   niveau?: string | null
+  sexeGroupe?: string | null
 }
 
 type Eleve = {
@@ -27,6 +30,8 @@ type AppelData = {
 }
 
 export default function AppelPage() {
+  const router = useRouter()
+
   // Authentification via hook (récupère depuis JWT cookie)
   const { user, loading: authLoading } = useAuth({
     requireAuth: true,
@@ -42,21 +47,33 @@ export default function AppelPage() {
   const [appelExists, setAppelExists] = useState(false)
 
   /**
+   * Rediriger les rôles admin vers le dashboard
+   */
+  useEffect(() => {
+    if (!authLoading && user) {
+      const adminRoles = ['cpe', 'manager', 'superadmin']
+      if (adminRoles.includes(user.role)) {
+        router.push('/admin/dashboard')
+      }
+    }
+  }, [user, authLoading, router])
+
+  /**
    * Au chargement : charger les élèves quand user est disponible
    */
   useEffect(() => {
-    if (user?.niveau) {
-      loadEleves(user.niveau)
+    if (user?.niveau && user?.sexeGroupe) {
+      loadEleves(user.niveau, user.sexeGroupe)
     }
   }, [user])
 
   /**
-   * Charger les élèves d'un niveau et l'appel existant du jour
+   * Charger les élèves d'un niveau et sexe, et l'appel existant du jour
    */
-  const loadEleves = async (niveau: string) => {
+  const loadEleves = async (niveau: string, sexeGroupe: string) => {
     try {
       // Charger les élèves
-      const elevesResponse = await fetch(`/api/eleves?niveau=${niveau}`)
+      const elevesResponse = await fetch(`/api/eleves?niveau=${niveau}&sexe=${sexeGroupe}`)
       const elevesData = await elevesResponse.json()
 
       if (!elevesData.success) {
@@ -172,6 +189,20 @@ export default function AppelPage() {
 
   if (!user) return null
 
+  // Si l'AED n'a pas de sexeGroupe assigné, afficher un message
+  if (!user.sexeGroupe) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Votre compte n'a pas encore été configuré.</p>
+          <p className="text-gray-600">Contactez l'administrateur pour assigner votre groupe.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const groupeLabel = user.sexeGroupe === 'F' ? 'Filles' : 'Garçons'
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -180,7 +211,7 @@ export default function AppelPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-white">
-                Appel - {user.niveau}
+                Appel - {user.niveau} {groupeLabel}
               </h1>
               <p className="mt-1 text-sm text-white/80">
                 {user.email} • {eleves.length} élèves • Internat d&apos;Excellence de Sourdun

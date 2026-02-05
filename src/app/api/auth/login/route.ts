@@ -82,6 +82,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       role: user.role,
       niveau: user.niveau,
+      sexeGroupe: user.sexeGroupe,
     })
 
     // 7. Stocker le token dans un cookie HttpOnly sécurisé

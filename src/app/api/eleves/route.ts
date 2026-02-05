@@ -3,14 +3,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 /**
- * GET /api/eleves?niveau=6eme
- * Retourne la liste des élèves actifs d'un niveau
+ * GET /api/eleves?niveau=6eme&sexe=F
+ * Retourne la liste des élèves actifs d'un niveau et d'un sexe
  */
 export async function GET(request: NextRequest) {
   try {
-    // Récupérer le paramètre "niveau" de l'URL
+    // Récupérer les paramètres de l'URL
     const searchParams = request.nextUrl.searchParams
     const niveau = searchParams.get('niveau')
+    const sexe = searchParams.get('sexe')
 
     if (!niveau) {
       return NextResponse.json(
@@ -19,10 +20,18 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Chercher les élèves actifs de ce niveau
+    if (!sexe) {
+      return NextResponse.json(
+        { success: false, error: 'Sexe requis' },
+        { status: 400 }
+      )
+    }
+
+    // Chercher les élèves actifs de ce niveau et de ce sexe
     const eleves = await prisma.eleve.findMany({
       where: {
         niveau,
+        sexe,
         actif: true, // Seulement les élèves encore présents
       },
       orderBy: [

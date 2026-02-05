@@ -9,7 +9,7 @@ type RouteContext = {
 
 /**
  * PATCH /api/admin/aed/[id]
- * Modifier un AED
+ * Modifier un utilisateur
  */
 export async function PATCH(
   request: NextRequest,
@@ -18,24 +18,24 @@ export async function PATCH(
   try {
     const { id } = await context.params
     const body = await request.json()
-    const { email, password, nom, prenom, niveau } = body
+    const { email, password, nom, prenom, niveau, sexeGroupe, role } = body
 
-    // Validation
-    if (!email || !nom || !prenom || !niveau) {
+    // Validation basique
+    if (!email || !nom || !prenom) {
       return NextResponse.json(
-        { success: false, error: 'Tous les champs sont requis (sauf mot de passe)' },
+        { success: false, error: 'Email, nom et prénom sont requis' },
         { status: 400 }
       )
     }
 
-    // Vérifier que l'AED existe
+    // Vérifier que l'utilisateur existe
     const existing = await prisma.user.findUnique({
       where: { id },
     })
 
-    if (!existing || existing.role !== 'aed') {
+    if (!existing) {
       return NextResponse.json(
-        { success: false, error: 'AED non trouvé' },
+        { success: false, error: 'Utilisateur non trouvé' },
         { status: 404 }
       )
     }
@@ -54,18 +54,27 @@ export async function PATCH(
       }
     }
 
+    // Déterminer le rôle (garder l'existant si non fourni)
+    const userRole = role || existing.role
+    const adminRoles = ['cpe', 'manager', 'superadmin']
+    const isAdminRole = adminRoles.includes(userRole)
+
     // Préparer les données de mise à jour
     const updateData: {
       email: string
       nom: string
       prenom: string
-      niveau: string
+      role: string
+      niveau: string | null
+      sexeGroupe: string | null
       password?: string
     } = {
       email,
       nom,
       prenom,
-      niveau,
+      role: userRole,
+      niveau: isAdminRole ? null : (niveau || existing.niveau),
+      sexeGroupe: isAdminRole ? null : (sexeGroupe || existing.sexeGroupe),
     }
 
     // Hasher le nouveau mot de passe si fourni
@@ -73,8 +82,8 @@ export async function PATCH(
       updateData.password = await hashPassword(password)
     }
 
-    // Mettre à jour l'AED
-    const aed = await prisma.user.update({
+    // Mettre à jour l'utilisateur
+    const user = await prisma.user.update({
       where: { id },
       data: updateData,
       select: {
@@ -84,15 +93,16 @@ export async function PATCH(
         prenom: true,
         role: true,
         niveau: true,
+        sexeGroupe: true,
       },
     })
 
     return NextResponse.json({
       success: true,
-      aed,
+      aed: user, // Garde le même nom pour compatibilité
     })
   } catch (error) {
-    console.error('Erreur modification AED:', error)
+    console.error('Erreur modification utilisateur:', error)
     return NextResponse.json(
       { success: false, error: 'Erreur serveur' },
       { status: 500 }
@@ -102,7 +112,7 @@ export async function PATCH(
 
 /**
  * DELETE /api/admin/aed/[id]
- * Supprimer un AED
+ * Supprimer un utilisateur
  */
 export async function DELETE(
   request: NextRequest,
@@ -111,19 +121,19 @@ export async function DELETE(
   try {
     const { id } = await context.params
 
-    // Vérifier que l'AED existe
+    // Vérifier que l'utilisateur existe
     const existing = await prisma.user.findUnique({
       where: { id },
     })
 
-    if (!existing || existing.role !== 'aed') {
+    if (!existing) {
       return NextResponse.json(
-        { success: false, error: 'AED non trouvé' },
+        { success: false, error: 'Utilisateur non trouvé' },
         { status: 404 }
       )
     }
 
-    // Supprimer l'AED (les appels associés seront supprimés en cascade si configuré)
+    // Supprimer l'utilisateur (les appels associés seront supprimés en cascade si configuré)
     await prisma.user.delete({
       where: { id },
     })
@@ -132,7 +142,7 @@ export async function DELETE(
       success: true,
     })
   } catch (error) {
-    console.error('Erreur suppression AED:', error)
+    console.error('Erreur suppression utilisateur:', error)
     return NextResponse.json(
       { success: false, error: 'Erreur serveur' },
       { status: 500 }

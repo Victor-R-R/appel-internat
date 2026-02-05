@@ -20,12 +20,15 @@ export default function RecapsPage() {
   const [currentRecap, setCurrentRecap] = useState<Recap | null>(null)
   const [loading, setLoading] = useState(true)
   const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [generating, setGenerating] = useState(false)
+  const [generateMessage, setGenerateMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     if (authLoading) return
 
-    if (user && user.role !== 'superadmin') {
-      alert('⛔ Accès réservé aux superadmins')
+    const adminRoles = ['cpe', 'manager', 'superadmin']
+    if (user && !adminRoles.includes(user.role)) {
+      alert('⛔ Accès réservé aux CPE, Managers et Superadmins')
       router.push('/appel')
       return
     }
@@ -69,6 +72,52 @@ export default function RecapsPage() {
     } catch (error) {
       console.error('Erreur chargement récap:', error)
       setCurrentRecap(null)
+    }
+  }
+
+  const handleGenerateRecap = async (date?: Date) => {
+    const targetDate = date || selectedDate
+    const dateStr = formatDateForAPI(targetDate)
+
+    if (!confirm(`Générer un récap IA pour le ${formatDate(targetDate.toISOString())} ?`)) {
+      return
+    }
+
+    setGenerating(true)
+    setGenerateMessage(null)
+
+    try {
+      const response = await fetch('/api/admin/recaps/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: dateStr }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setGenerateMessage({
+          type: 'success',
+          text: `✅ Récap généré avec succès ! (${data.observationsCount} observation(s) traitée(s))`,
+        })
+        // Recharger le récap et la liste
+        await Promise.all([loadRecapForDate(targetDate), loadRecaps()])
+      } else {
+        setGenerateMessage({
+          type: 'error',
+          text: `❌ ${data.error || 'Erreur lors de la génération'}`,
+        })
+      }
+    } catch (error) {
+      console.error('Erreur génération récap:', error)
+      setGenerateMessage({
+        type: 'error',
+        text: '❌ Erreur de connexion',
+      })
+    } finally {
+      setGenerating(false)
+      // Effacer le message après 5 secondes
+      setTimeout(() => setGenerateMessage(null), 5000)
     }
   }
 
@@ -167,11 +216,32 @@ export default function RecapsPage() {
                 {recaps.length} récap(s) généré(s) • Navigation par calendrier
               </p>
             </div>
+            {/* Bouton génération récap - Superadmin uniquement */}
+            {user.role === 'superadmin' && (
+              <button
+                onClick={() => handleGenerateRecap()}
+                disabled={generating}
+                className="rounded-md bg-white px-4 py-2 text-sm font-semibold shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ color: '#0C71C3' }}
+              >
+                {generating ? '⏳ Génération...' : '🤖 Générer récap IA'}
+              </button>
+            )}
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Message de génération */}
+        {generateMessage && (
+          <div
+            className={`mb-6 rounded-md p-4 ${
+              generateMessage.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            }`}
+          >
+            {generateMessage.text}
+          </div>
+        )}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* Calendrier */}
           <div className="lg:col-span-1">
@@ -270,6 +340,19 @@ export default function RecapsPage() {
                   <p className="mb-6 text-gray-600">
                     Le récap est généré automatiquement chaque matin à 6h s'il y a des observations.
                   </p>
+
+                  {/* Bouton génération - Superadmin uniquement */}
+                  {user.role === 'superadmin' && (
+                    <button
+                      onClick={() => handleGenerateRecap(selectedDate)}
+                      disabled={generating}
+                      className="mb-6 rounded-md px-6 py-3 text-sm font-semibold text-white shadow-sm hover:opacity-90 disabled:opacity-50"
+                      style={{ background: 'linear-gradient(to right, #4d8dc1, #0C71C3)' }}
+                    >
+                      {generating ? '⏳ Génération en cours...' : '🤖 Générer le récap pour ce jour'}
+                    </button>
+                  )}
+
                   <div className="rounded-md p-4 text-left" style={{ backgroundColor: '#e2e5ed' }}>
                     <p className="text-sm font-semibold" style={{ color: '#0C71C3' }}>
                       💡 Génération automatique
@@ -278,7 +361,8 @@ export default function RecapsPage() {
                       <li>Cron job configuré pour 6h du matin</li>
                       <li>Résumé IA des observations de la veille</li>
                       <li>Structuré par niveau avec points d'attention</li>
-                      <li>Visible uniquement s'il y a des observations</li>
+                      <li>Utilise OpenAI GPT-4o ou Claude 3.5 Sonnet</li>
+                      <li>Bouton de test disponible pour générer manuellement</li>
                     </ul>
                   </div>
                 </div>

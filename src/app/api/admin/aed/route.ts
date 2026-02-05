@@ -6,13 +6,13 @@ import { aedSchema, validateRequest } from '@/lib/validation'
 
 /**
  * GET /api/admin/aed
- * Liste tous les AED
+ * Liste tous les utilisateurs (AED, CPE, Manager, Superadmin)
  */
 export async function GET() {
   try {
-    const aeds = await prisma.user.findMany({
-      where: { role: 'aed' },
+    const users = await prisma.user.findMany({
       orderBy: [
+        { role: 'asc' },
         { niveau: 'asc' },
         { nom: 'asc' },
       ],
@@ -23,16 +23,17 @@ export async function GET() {
         prenom: true,
         role: true,
         niveau: true,
+        sexeGroupe: true,
         createdAt: true,
       },
     })
 
     return NextResponse.json({
       success: true,
-      aeds,
+      aeds: users, // Garde le même nom pour compatibilité
     })
   } catch (error) {
-    console.error('Erreur liste AED:', error)
+    console.error('Erreur liste utilisateurs:', error)
     return NextResponse.json(
       { success: false, error: 'Erreur serveur' },
       { status: 500 }
@@ -42,13 +43,13 @@ export async function GET() {
 
 /**
  * POST /api/admin/aed
- * Créer un nouvel AED
+ * Créer un nouvel utilisateur (AED, CPE, Manager, Superadmin)
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    // Validation avec Zod
+    // Validation avec Zod (niveau et sexeGroupe optionnels pour CPE/Manager/Superadmin)
     const validation = validateRequest(aedSchema, body)
     if (!validation.success) {
       return NextResponse.json(
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { email, password, nom, prenom, niveau } = validation.data
+    const { email, password, nom, prenom, niveau, sexeGroupe, role } = validation.data
 
     // Le password doit être présent lors de la création
     if (!password) {
@@ -82,15 +83,20 @@ export async function POST(request: NextRequest) {
     // Hasher le mot de passe
     const hashedPassword = await hashPassword(password)
 
-    // Créer l'AED
-    const aed = await prisma.user.create({
+    // Pour CPE, Manager et Superadmin, niveau et sexeGroupe sont null (accès complet)
+    const adminRoles = ['cpe', 'manager', 'superadmin']
+    const isAdminRole = adminRoles.includes(role || 'aed')
+
+    // Créer l'utilisateur
+    const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         nom,
         prenom,
-        niveau,
-        role: 'aed',
+        niveau: isAdminRole ? null : niveau,
+        sexeGroupe: isAdminRole ? null : sexeGroupe,
+        role: role || 'aed',
       },
       select: {
         id: true,
@@ -99,15 +105,16 @@ export async function POST(request: NextRequest) {
         prenom: true,
         role: true,
         niveau: true,
+        sexeGroupe: true,
       },
     })
 
     return NextResponse.json({
       success: true,
-      aed,
+      aed: user, // Garde le même nom pour compatibilité
     })
   } catch (error) {
-    console.error('Erreur création AED:', error)
+    console.error('Erreur création utilisateur:', error)
     return NextResponse.json(
       { success: false, error: 'Erreur serveur' },
       { status: 500 }
