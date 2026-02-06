@@ -4,15 +4,12 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth, useLogout } from '@/hooks/useAuth'
+import type { UserDTO } from '@/lib/types'
 
-type AED = {
-  id: string
-  email: string
+// Extension locale avec nom/prenom requis pour l'interface admin
+type AED = UserDTO & {
   nom: string
   prenom: string
-  role: string
-  niveau: string | null
-  sexeGroupe: string | null
 }
 
 export default function GestionAEDPage() {
@@ -300,7 +297,7 @@ export default function GestionAEDPage() {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="btn-primary rounded-md px-4 py-2 text-sm font-semibold text-white transition-all"
+                  className="btn-primary rounded-md px-4 py-2 text-sm font-semibold text-white transition-all cursor-pointer"
                   style={{ backgroundColor: '#0C71C3' }}
                 >
                   {editingAED ? 'Modifier' : 'Créer'}
@@ -308,7 +305,7 @@ export default function GestionAEDPage() {
                 <button
                   type="button"
                   onClick={cancelForm}
-                  className="rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300"
+                  className="rounded-md bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-300 cursor-pointer"
                 >
                   Annuler
                 </button>
