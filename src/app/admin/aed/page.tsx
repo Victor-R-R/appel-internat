@@ -380,14 +380,14 @@ export default function GestionAEDPage() {
                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                       <button
                         onClick={() => handleEdit(aed)}
-                        className="mr-3 hover:opacity-80 transition-opacity"
+                        className="mr-3 hover:opacity-80 transition-opacity cursor-pointer"
                         style={{ color: '#0C71C3' }}
                       >
                         Modifier
                       </button>
                       <button
                         onClick={() => handleDelete(aed)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600 hover:text-red-900 cursor-pointer"
                       >
                         Supprimer
                       </button>
