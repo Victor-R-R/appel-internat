@@ -106,6 +106,8 @@ export default function GestionAEDPage() {
       role: aed.role || 'aed',
     })
     setShowForm(true)
+    // Scroll vers le haut pour voir le formulaire
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDelete = async (aed: AED) => {
