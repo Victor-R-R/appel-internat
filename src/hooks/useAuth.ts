@@ -12,6 +12,8 @@ type User = {
   id: string
   email: string
   role: string
+  nom?: string
+  prenom?: string
   niveau?: string | null
   sexeGroupe?: string | null
 }
