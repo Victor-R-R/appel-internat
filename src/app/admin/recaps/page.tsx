@@ -297,10 +297,20 @@ export default function RecapsPage() {
                 <div className="mb-4 whitespace-pre-wrap rounded-md bg-gray-50 p-4 text-sm text-gray-700">
                   {currentRecap.contenu}
                 </div>
-                <p className="text-xs text-gray-500">
-                  Généré le {new Date(currentRecap.createdAt).toLocaleDateString('fr-FR')} à{' '}
-                  {new Date(currentRecap.createdAt).toLocaleTimeString('fr-FR')}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-500">
+                    Généré le {new Date(currentRecap.createdAt).toLocaleDateString('fr-FR')} à{' '}
+                    {new Date(currentRecap.createdAt).toLocaleTimeString('fr-FR')}
+                  </p>
+                  <button
+                    onClick={() => handleGenerateRecap(selectedDate)}
+                    disabled={generating}
+                    className="rounded-md px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                    style={{ backgroundColor: '#4d8dc1' }}
+                  >
+                    {generating ? '⏳ Regénération...' : '🔄 Régénérer'}
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="text-center">
