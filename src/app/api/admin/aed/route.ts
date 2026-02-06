@@ -5,6 +5,7 @@ import { hashPassword } from '@/lib/auth'
 import { aedSchema, validateRequest } from '@/lib/validation'
 import { isAdminRole } from '@/lib/constants'
 import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { USER_PUBLIC_SELECT, USER_PUBLIC_SELECT_NO_DATE } from '@/lib/prisma-selects'
 
 /**
  * GET /api/admin/aed
@@ -18,16 +19,7 @@ export async function GET() {
         { niveau: 'asc' },
         { nom: 'asc' },
       ],
-      select: {
-        id: true,
-        email: true,
-        nom: true,
-        prenom: true,
-        role: true,
-        niveau: true,
-        sexeGroupe: true,
-        createdAt: true,
-      },
+      select: USER_PUBLIC_SELECT,
     })
 
     return apiSuccess({
@@ -85,15 +77,7 @@ export async function POST(request: NextRequest) {
         sexeGroupe: isAdmin ? null : sexeGroupe,
         role: role || 'aed',
       },
-      select: {
-        id: true,
-        email: true,
-        nom: true,
-        prenom: true,
-        role: true,
-        niveau: true,
-        sexeGroupe: true,
-      },
+      select: USER_PUBLIC_SELECT_NO_DATE,
     })
 
     return apiSuccess({

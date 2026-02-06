@@ -2,6 +2,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { eleveUpdateSchema, validateRequest } from '@/lib/validation'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -19,6 +20,14 @@ export async function PATCH(
     const { id } = await context.params
     const body = await request.json()
 
+    // Validation avec Zod
+    const validation = validateRequest(eleveUpdateSchema, body)
+    if (!validation.success) {
+      return apiError(validation.error, 400)
+    }
+
+    const { nom, prenom, niveau, sexe, actif } = validation.data
+
     // Vérifier que l'élève existe
     const existing = await prisma.eleve.findUnique({
       where: { id },
@@ -28,37 +37,25 @@ export async function PATCH(
       return apiError('Élève non trouvé', 404)
     }
 
-    // Si seulement le champ actif est envoyé (archivage/réactivation)
-    if (Object.keys(body).length === 1 && 'actif' in body) {
-      const eleve = await prisma.eleve.update({
-        where: { id },
-        data: { actif: body.actif },
-      })
+    // Préparer les données de mise à jour (seulement les champs fournis)
+    const updateData: {
+      nom?: string
+      prenom?: string
+      niveau?: string
+      sexe?: string
+      actif?: boolean
+    } = {}
 
-      return apiSuccess({ eleve })
-    }
-
-    // Sinon, modification complète
-    const { nom, prenom, niveau, sexe } = body
-
-    // Validation
-    if (!nom || !prenom || !niveau || !sexe) {
-      return apiError('Tous les champs sont requis', 400)
-    }
-
-    if (sexe !== 'M' && sexe !== 'F') {
-      return apiError('Sexe doit être M ou F', 400)
-    }
+    if (nom) updateData.nom = nom
+    if (prenom) updateData.prenom = prenom
+    if (niveau) updateData.niveau = niveau
+    if (sexe) updateData.sexe = sexe
+    if (actif !== undefined) updateData.actif = actif
 
     // Mettre à jour l'élève
     const eleve = await prisma.eleve.update({
       where: { id },
-      data: {
-        nom,
-        prenom,
-        niveau,
-        sexe,
-      },
+      data: updateData,
     })
 
     return apiSuccess({ eleve })

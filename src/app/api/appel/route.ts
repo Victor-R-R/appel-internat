@@ -2,7 +2,9 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { appelCompletSchema, validateRequest } from '@/lib/validation'
-import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { apiSuccess, apiError, apiServerError, normalizeDate } from '@/lib/api-helpers'
+import { findByNiveauAndDate, replaceForNiveauAndDate } from '@/lib/repositories/appel'
+import type { Niveau } from '@/lib/constants'
 
 /**
  * GET /api/appel?niveau=6eme&date=2024-01-15
@@ -19,37 +21,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Date du jour ou date fournie
-    const date = dateParam ? new Date(dateParam) : new Date()
-    date.setUTCHours(0, 0, 0, 0)
+    const date = normalizeDate(dateParam || undefined)
 
     // Récupérer les appels existants pour ce niveau et cette date
-    const appels = await prisma.appel.findMany({
-      where: {
-        niveau,
-        date,
-      },
-      include: {
-        eleve: {
-          select: {
-            id: true,
-            nom: true,
-            prenom: true,
-            niveau: true,
-            sexe: true,
-          },
-        },
-        aed: {
-          select: {
-            id: true,
-            nom: true,
-            prenom: true,
-          },
-        },
-      },
-      orderBy: {
-        eleve: { nom: 'asc' },
-      },
-    })
+    const appels = await findByNiveauAndDate(niveau as Niveau, date)
 
     // Si aucun appel trouvé
     if (appels.length === 0) {
@@ -96,30 +71,19 @@ export async function POST(request: NextRequest) {
     const { aedId, niveau, appels } = validation.data
 
     // Date du jour en UTC (évite les problèmes de timezone)
-    const today = new Date()
-    today.setUTCHours(0, 0, 0, 0)
+    const today = normalizeDate()
 
-    // Supprimer les appels existants pour ce niveau aujourd'hui
-    // (permet de refaire l'appel si erreur)
-    await prisma.appel.deleteMany({
-      where: {
-        niveau,
-        date: today,
-      },
-    })
-
-    // Créer tous les nouveaux appels
-    // createMany = batch insert (plus rapide que des INSERT individuels)
-    const result = await prisma.appel.createMany({
-      data: appels.map((appel) => ({
+    // Remplacer les appels pour ce niveau et cette date (transaction atomique)
+    const result = await replaceForNiveauAndDate(
+      niveau as Niveau,
+      today,
+      appels.map((appel) => ({
         eleveId: appel.eleveId,
         aedId,
-        niveau,
-        date: today,
         statut: appel.statut,
         observation: appel.observation || null,
-      })),
-    })
+      }))
+    )
 
     return apiSuccess({
       count: result.count, // Nombre d'appels créés
