@@ -310,7 +310,7 @@ export default function AppelPage() {
           <button
             onClick={saveAppel}
             disabled={saving}
-            className="btn-primary rounded-md px-8 py-3 text-base font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all"
+            className="btn-primary rounded-md px-8 py-3 text-base font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all cursor-pointer"
             style={{
               backgroundColor: saving ? '#cccccc' : '#0C71C3',
               cursor: saving ? 'not-allowed' : 'pointer'
