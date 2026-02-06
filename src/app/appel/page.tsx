@@ -217,7 +217,7 @@ export default function AppelPage() {
                 Appel - {selectedNiveau} {groupeLabel}
               </h1>
               <p className="mt-1 text-sm text-white/80">
-                {user.email} • {eleves.length} élèves • Internat d&apos;Excellence de Sourdun
+                {user.prenom} {user.nom} • {eleves.length} élèves • Internat d&apos;Excellence de Sourdun
               </p>
               {appelExists && (
                 <p className="mt-2 inline-block rounded-md bg-white/20 px-3 py-1 text-xs font-medium text-white">
