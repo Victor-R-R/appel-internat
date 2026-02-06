@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
 import { isAdminRole } from '@/lib/constants'
 import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { USER_PUBLIC_SELECT_NO_DATE } from '@/lib/prisma-selects'
+import { aedUpdateSchema, validateRequest } from '@/lib/validation'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -20,12 +22,14 @@ export async function PATCH(
   try {
     const { id } = await context.params
     const body = await request.json()
-    const { email, password, nom, prenom, niveau, sexeGroupe, role } = body
 
-    // Validation basique
-    if (!email || !nom || !prenom) {
-      return apiError('Email, nom et prénom sont requis', 400)
+    // Validation avec Zod
+    const validation = validateRequest(aedUpdateSchema, body)
+    if (!validation.success) {
+      return apiError(validation.error, 400)
     }
+
+    const { email, password, nom, prenom, niveau, sexeGroupe, role } = validation.data
 
     // Vérifier que l'utilisateur existe
     const existing = await prisma.user.findUnique({
@@ -37,7 +41,7 @@ export async function PATCH(
     }
 
     // Vérifier que l'email n'est pas déjà pris par un autre utilisateur
-    if (email !== existing.email) {
+    if (email && email !== existing.email) {
       const emailTaken = await prisma.user.findUnique({
         where: { email },
       })
@@ -51,22 +55,28 @@ export async function PATCH(
     const userRole = role || existing.role
     const isAdmin = isAdminRole(userRole)
 
-    // Préparer les données de mise à jour
+    // Préparer les données de mise à jour (seulement les champs fournis)
     const updateData: {
-      email: string
-      nom: string
-      prenom: string
-      role: string
-      niveau: string | null
-      sexeGroupe: string | null
+      email?: string
+      nom?: string
+      prenom?: string
+      role?: string
+      niveau?: string | null
+      sexeGroupe?: string | null
       password?: string
-    } = {
-      email,
-      nom,
-      prenom,
-      role: userRole,
-      niveau: isAdmin ? null : (niveau || existing.niveau),
-      sexeGroupe: isAdmin ? null : (sexeGroupe || existing.sexeGroupe),
+    } = {}
+
+    if (email) updateData.email = email
+    if (nom) updateData.nom = nom
+    if (prenom) updateData.prenom = prenom
+    if (role) updateData.role = role
+
+    // Gestion du niveau et sexeGroupe selon le rôle
+    if (niveau !== undefined) {
+      updateData.niveau = isAdmin ? null : niveau
+    }
+    if (sexeGroupe !== undefined) {
+      updateData.sexeGroupe = isAdmin ? null : sexeGroupe
     }
 
     // Hasher le nouveau mot de passe si fourni
@@ -78,15 +88,7 @@ export async function PATCH(
     const user = await prisma.user.update({
       where: { id },
       data: updateData,
-      select: {
-        id: true,
-        email: true,
-        nom: true,
-        prenom: true,
-        role: true,
-        niveau: true,
-        sexeGroupe: true,
-      },
+      select: USER_PUBLIC_SELECT_NO_DATE,
     })
 
     return apiSuccess({

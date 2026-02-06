@@ -1,7 +1,8 @@
 // API pour récupérer les élèves d'un niveau
 import { NextRequest } from 'next/server'
-import { prisma } from '@/lib/prisma'
 import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
+import { findActiveByNiveauAndSexe } from '@/lib/repositories/eleve'
+import type { Niveau, Sexe } from '@/lib/constants'
 
 /**
  * GET /api/eleves?niveau=6eme&sexe=F
@@ -23,17 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Chercher les élèves actifs de ce niveau et de ce sexe
-    const eleves = await prisma.eleve.findMany({
-      where: {
-        niveau,
-        sexe,
-        actif: true, // Seulement les élèves encore présents
-      },
-      orderBy: [
-        { nom: 'asc' },     // Tri par nom
-        { prenom: 'asc' },  // puis prénom
-      ],
-    })
+    const eleves = await findActiveByNiveauAndSexe(niveau as Niveau, sexe as Sexe)
 
     return apiSuccess({ eleves })
   } catch (error) {

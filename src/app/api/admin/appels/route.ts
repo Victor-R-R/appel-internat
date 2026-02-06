@@ -2,6 +2,7 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { apiSuccess, apiServerError, getDateRange } from '@/lib/api-helpers'
+import { APPEL_INCLUDE_FULL } from '@/lib/prisma-selects'
 
 /**
  * GET /api/admin/appels?date=2024-01-15&niveau=6eme&sexe=F
@@ -42,25 +43,7 @@ export async function GET(request: NextRequest) {
     // Récupérer les appels avec les informations de l'élève et de l'AED
     const appels = await prisma.appel.findMany({
       where,
-      include: {
-        eleve: {
-          select: {
-            id: true,
-            nom: true,
-            prenom: true,
-            niveau: true,
-            sexe: true,
-          },
-        },
-        aed: {
-          select: {
-            id: true,
-            nom: true,
-            prenom: true,
-            email: true,
-          },
-        },
-      },
+      include: APPEL_INCLUDE_FULL,
       orderBy: [
         { niveau: 'asc' },
         { date: 'desc' },

@@ -40,6 +40,12 @@ export const eleveSchema = z.object({
   actif: z.boolean().optional().default(true),
 })
 
+// Validation pour PATCH élève (tous les champs optionnels)
+export const eleveUpdateSchema = eleveSchema.partial().refine(
+  (data) => data.nom || data.prenom || data.niveau || data.sexe || data.actif !== undefined,
+  { message: 'Au moins un champ doit être fourni pour la modification' }
+)
+
 // Validation d'un utilisateur (AED, CPE, Manager, Superadmin)
 export const aedSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -63,6 +69,12 @@ export const aedSchema = z.object({
   }).optional(),
   role: z.enum(rolesValides).optional().default('aed'),
 })
+
+// Validation pour PATCH utilisateur (tous les champs optionnels sauf validations)
+export const aedUpdateSchema = aedSchema.partial().refine(
+  (data) => data.email || data.nom || data.prenom || data.password || data.role || data.niveau || data.sexeGroupe,
+  { message: 'Au moins un champ doit être fourni pour la modification' }
+)
 
 // Validation d'un appel individuel
 export const appelIndividuelSchema = z.object({
