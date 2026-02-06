@@ -46,6 +46,10 @@ export default function AppelPage() {
   const [saving, setSaving] = useState(false)
   const [appelExists, setAppelExists] = useState(false)
 
+  // Sélecteurs de niveau et groupe (initialisés avec les valeurs de l'AED par défaut)
+  const [selectedNiveau, setSelectedNiveau] = useState<string>('')
+  const [selectedSexeGroupe, setSelectedSexeGroupe] = useState<string>('')
+
   /**
    * Rediriger les rôles admin vers le dashboard
    */
@@ -59,13 +63,23 @@ export default function AppelPage() {
   }, [user, authLoading, router])
 
   /**
-   * Au chargement : charger les élèves quand user est disponible
+   * Initialiser les sélecteurs avec les valeurs par défaut de l'AED
    */
   useEffect(() => {
     if (user?.niveau && user?.sexeGroupe) {
-      loadEleves(user.niveau, user.sexeGroupe)
+      setSelectedNiveau(user.niveau)
+      setSelectedSexeGroupe(user.sexeGroupe)
     }
   }, [user])
+
+  /**
+   * Charger les élèves quand niveau ou groupe change
+   */
+  useEffect(() => {
+    if (selectedNiveau && selectedSexeGroupe) {
+      loadEleves(selectedNiveau, selectedSexeGroupe)
+    }
+  }, [selectedNiveau, selectedSexeGroupe])
 
   /**
    * Charger les élèves d'un niveau et sexe, et l'appel existant du jour
@@ -156,7 +170,7 @@ export default function AppelPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           aedId: user.id,
-          niveau: user.niveau,
+          niveau: selectedNiveau, // Utilise le niveau sélectionné
           appels: Object.values(appels),
         }),
       })
@@ -189,19 +203,8 @@ export default function AppelPage() {
 
   if (!user) return null
 
-  // Si l'AED n'a pas de sexeGroupe assigné, afficher un message
-  if (!user.sexeGroupe) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600 mb-4">Votre compte n'a pas encore été configuré.</p>
-          <p className="text-gray-600">Contactez l'administrateur pour assigner votre groupe.</p>
-        </div>
-      </div>
-    )
-  }
-
-  const groupeLabel = user.sexeGroupe === 'F' ? 'Filles' : 'Garçons'
+  const groupeLabel = selectedSexeGroupe === 'F' ? 'Filles' : 'Garçons'
+  const niveaux = ['6eme', '5eme', '4eme', '3eme', '2nde', '1ere', 'Tle']
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -209,9 +212,9 @@ export default function AppelPage() {
       <header className="shadow-lg" style={{ background: 'linear-gradient(to right, #0C71C3, #4d8dc1)' }}>
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-white">
-                Appel - {user.niveau} {groupeLabel}
+                Appel - {selectedNiveau} {groupeLabel}
               </h1>
               <p className="mt-1 text-sm text-white/80">
                 {user.email} • {eleves.length} élèves • Internat d&apos;Excellence de Sourdun
@@ -228,6 +231,41 @@ export default function AppelPage() {
             >
               Déconnexion
             </button>
+          </div>
+
+          {/* Sélecteurs de niveau et groupe */}
+          <div className="mt-6 flex gap-4">
+            <div className="flex-1">
+              <label className="mb-2 block text-sm font-medium text-white">
+                🎓 Niveau
+              </label>
+              <select
+                value={selectedNiveau}
+                onChange={(e) => setSelectedNiveau(e.target.value)}
+                className="w-full rounded-md border border-white/20 bg-white/10 px-4 py-2 text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white backdrop-blur-sm"
+                style={{ color: 'white' }}
+              >
+                {niveaux.map((niveau) => (
+                  <option key={niveau} value={niveau} style={{ color: '#333' }}>
+                    {niveau}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="mb-2 block text-sm font-medium text-white">
+                👥 Groupe
+              </label>
+              <select
+                value={selectedSexeGroupe}
+                onChange={(e) => setSelectedSexeGroupe(e.target.value)}
+                className="w-full rounded-md border border-white/20 bg-white/10 px-4 py-2 text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white backdrop-blur-sm"
+                style={{ color: 'white' }}
+              >
+                <option value="F" style={{ color: '#333' }}>👧 Filles</option>
+                <option value="M" style={{ color: '#333' }}>👦 Garçons</option>
+              </select>
+            </div>
           </div>
         </div>
       </header>
