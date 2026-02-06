@@ -81,6 +81,8 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       email: user.email,
       role: user.role,
+      nom: user.nom,
+      prenom: user.prenom,
       niveau: user.niveau,
       sexeGroupe: user.sexeGroupe,
     })

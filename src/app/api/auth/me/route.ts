@@ -25,6 +25,8 @@ export async function GET() {
         id: session.userId,
         email: session.email,
         role: session.role,
+        nom: session.nom,
+        prenom: session.prenom,
         niveau: session.niveau,
         sexeGroupe: session.sexeGroupe,
       },
