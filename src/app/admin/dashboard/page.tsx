@@ -4,13 +4,6 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth, useLogout } from '@/hooks/useAuth'
 
-type User = {
-  id: string
-  email: string
-  role: string
-  niveau?: string | null
-}
-
 type Stats = {
   totalAED: number
   totalEleves: number

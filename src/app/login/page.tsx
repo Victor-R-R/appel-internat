@@ -124,12 +124,14 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Infos de test */}
-        <div className="mt-4 rounded-md bg-blue-50 p-4">
-          <p className="text-xs text-blue-800">
-            <strong>Test :</strong> aed.6eme@internat.fr / password123
-          </p>
-        </div>
+        {/* Infos de test - seulement en développement */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-4 rounded-md bg-blue-50 p-4">
+            <p className="text-xs text-blue-800">
+              <strong>Test :</strong> aed.6eme@internat.fr / password123
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

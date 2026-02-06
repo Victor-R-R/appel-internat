@@ -3,23 +3,12 @@
  */
 
 import { z } from 'zod'
+import { NIVEAUX, ROLES, STATUTS } from './constants'
 
-// Niveaux scolaires autorisés
-const niveauxValides = [
-  '6eme',
-  '5eme',
-  '4eme',
-  '3eme',
-  '2nde',
-  '1ere',
-  'term',
-] as const
-
-// Statuts d'appel autorisés
-const statutsValides = ['present', 'acf', 'absent'] as const
-
-// Rôles utilisateur autorisés
-const rolesValides = ['aed', 'cpe', 'manager', 'superadmin'] as const
+// Valeurs autorisées importées depuis constants.ts
+const niveauxValides = NIVEAUX
+const statutsValides = STATUTS
+const rolesValides = ROLES
 
 // Validation login
 export const loginSchema = z.object({

@@ -1,6 +1,7 @@
 // API pour récupérer les élèves d'un niveau
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 
 /**
  * GET /api/eleves?niveau=6eme&sexe=F
@@ -14,17 +15,11 @@ export async function GET(request: NextRequest) {
     const sexe = searchParams.get('sexe')
 
     if (!niveau) {
-      return NextResponse.json(
-        { success: false, error: 'Niveau requis' },
-        { status: 400 }
-      )
+      return apiError('Niveau requis')
     }
 
     if (!sexe) {
-      return NextResponse.json(
-        { success: false, error: 'Sexe requis' },
-        { status: 400 }
-      )
+      return apiError('Sexe requis')
     }
 
     // Chercher les élèves actifs de ce niveau et de ce sexe
@@ -40,15 +35,8 @@ export async function GET(request: NextRequest) {
       ],
     })
 
-    return NextResponse.json({
-      success: true,
-      eleves,
-    })
+    return apiSuccess({ eleves })
   } catch (error) {
-    console.error('Erreur récupération élèves:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur récupération élèves', error)
   }
 }

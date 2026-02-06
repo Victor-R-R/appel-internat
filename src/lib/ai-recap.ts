@@ -1,6 +1,7 @@
 // Génération de récaps avec OpenAI (ChatGPT) ou Claude
 import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
+import { NIVEAUX } from './constants'
 
 // Initialiser les clients selon les clés disponibles
 const openai = process.env.OPENAI_API_KEY
@@ -76,7 +77,7 @@ function construirePrompt(observations: ObservationData[], date: Date): string {
     year: 'numeric',
   })
 
-  const niveaux = ['6eme', '5eme', '4eme', '3eme', '2nde', '1ere', 'Term']
+  const niveaux = NIVEAUX
 
   let observationsTexte = ''
   niveaux.forEach((niveau) => {
@@ -194,7 +195,7 @@ function genererRecapBasique(observations: ObservationData[], date: Date): strin
   const totalObs = Object.values(observationsParNiveau).reduce((sum, obs) => sum + obs.length, 0)
   sections.push(`📊 Récapitulatif de la nuit du ${dateStr} - ${totalObs} observation(s)\n`)
 
-  const niveaux = ['6eme', '5eme', '4eme', '3eme', '2nde', '1ere', 'Term']
+  const niveaux = NIVEAUX
 
   niveaux.forEach((niveau) => {
     const obs = observationsParNiveau[niveau]

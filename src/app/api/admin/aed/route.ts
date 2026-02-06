@@ -1,8 +1,10 @@
 // API CRUD pour les AED (superadmin uniquement)
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
 import { aedSchema, validateRequest } from '@/lib/validation'
+import { isAdminRole } from '@/lib/constants'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 
 /**
  * GET /api/admin/aed
@@ -28,16 +30,11 @@ export async function GET() {
       },
     })
 
-    return NextResponse.json({
-      success: true,
+    return apiSuccess({
       aeds: users, // Garde le même nom pour compatibilité
     })
   } catch (error) {
-    console.error('Erreur liste utilisateurs:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur liste utilisateurs', error)
   }
 }
 
@@ -52,20 +49,14 @@ export async function POST(request: NextRequest) {
     // Validation avec Zod (niveau et sexeGroupe optionnels pour CPE/Manager/Superadmin)
     const validation = validateRequest(aedSchema, body)
     if (!validation.success) {
-      return NextResponse.json(
-        { success: false, error: validation.error },
-        { status: 400 }
-      )
+      return apiError(validation.error, 400)
     }
 
     const { email, password, nom, prenom, niveau, sexeGroupe, role } = validation.data
 
     // Le password doit être présent lors de la création
     if (!password) {
-      return NextResponse.json(
-        { success: false, error: 'Le mot de passe est requis' },
-        { status: 400 }
-      )
+      return apiError('Le mot de passe est requis', 400)
     }
 
     // Vérifier que l'email n'existe pas déjà
@@ -74,18 +65,14 @@ export async function POST(request: NextRequest) {
     })
 
     if (existing) {
-      return NextResponse.json(
-        { success: false, error: 'Cet email est déjà utilisé' },
-        { status: 400 }
-      )
+      return apiError('Cet email est déjà utilisé', 400)
     }
 
     // Hasher le mot de passe
     const hashedPassword = await hashPassword(password)
 
     // Pour CPE, Manager et Superadmin, niveau et sexeGroupe sont null (accès complet)
-    const adminRoles = ['cpe', 'manager', 'superadmin']
-    const isAdminRole = adminRoles.includes(role || 'aed')
+    const isAdmin = isAdminRole(role || 'aed')
 
     // Créer l'utilisateur
     const user = await prisma.user.create({
@@ -94,8 +81,8 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         nom,
         prenom,
-        niveau: isAdminRole ? null : niveau,
-        sexeGroupe: isAdminRole ? null : sexeGroupe,
+        niveau: isAdmin ? null : niveau,
+        sexeGroupe: isAdmin ? null : sexeGroupe,
         role: role || 'aed',
       },
       select: {
@@ -109,15 +96,10 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({
-      success: true,
+    return apiSuccess({
       aed: user, // Garde le même nom pour compatibilité
     })
   } catch (error) {
-    console.error('Erreur création utilisateur:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur création utilisateur', error)
   }
 }

@@ -1,6 +1,7 @@
 // API pour modifier/supprimer un élève spécifique
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -24,10 +25,7 @@ export async function PATCH(
     })
 
     if (!existing) {
-      return NextResponse.json(
-        { success: false, error: 'Élève non trouvé' },
-        { status: 404 }
-      )
+      return apiError('Élève non trouvé', 404)
     }
 
     // Si seulement le champ actif est envoyé (archivage/réactivation)
@@ -37,10 +35,7 @@ export async function PATCH(
         data: { actif: body.actif },
       })
 
-      return NextResponse.json({
-        success: true,
-        eleve,
-      })
+      return apiSuccess({ eleve })
     }
 
     // Sinon, modification complète
@@ -48,17 +43,11 @@ export async function PATCH(
 
     // Validation
     if (!nom || !prenom || !niveau || !sexe) {
-      return NextResponse.json(
-        { success: false, error: 'Tous les champs sont requis' },
-        { status: 400 }
-      )
+      return apiError('Tous les champs sont requis', 400)
     }
 
     if (sexe !== 'M' && sexe !== 'F') {
-      return NextResponse.json(
-        { success: false, error: 'Sexe doit être M ou F' },
-        { status: 400 }
-      )
+      return apiError('Sexe doit être M ou F', 400)
     }
 
     // Mettre à jour l'élève
@@ -72,16 +61,9 @@ export async function PATCH(
       },
     })
 
-    return NextResponse.json({
-      success: true,
-      eleve,
-    })
+    return apiSuccess({ eleve })
   } catch (error) {
-    console.error('Erreur modification élève:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur modification élève', error)
   }
 }
 
@@ -102,10 +84,7 @@ export async function DELETE(
     })
 
     if (!existing) {
-      return NextResponse.json(
-        { success: false, error: 'Élève non trouvé' },
-        { status: 404 }
-      )
+      return apiError('Élève non trouvé', 404)
     }
 
     // Supprimer l'élève (les appels associés seront supprimés en cascade)
@@ -113,14 +92,8 @@ export async function DELETE(
       where: { id },
     })
 
-    return NextResponse.json({
-      success: true,
-    })
+    return apiSuccess({})
   } catch (error) {
-    console.error('Erreur suppression élève:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur suppression élève', error)
   }
 }

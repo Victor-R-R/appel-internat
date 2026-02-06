@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
+import { ADMIN_ROLES } from '@/lib/constants'
+import { formatDateForAPI } from '@/lib/format'
 
 type Recap = {
   id: string
@@ -26,8 +28,7 @@ export default function RecapsPage() {
   useEffect(() => {
     if (authLoading) return
 
-    const adminRoles = ['cpe', 'manager', 'superadmin']
-    if (user && !adminRoles.includes(user.role)) {
+    if (user && !ADMIN_ROLES.includes(user.role)) {
       alert('⛔ Accès réservé aux CPE, Managers et Superadmins')
       router.push('/appel')
       return
@@ -119,10 +120,6 @@ export default function RecapsPage() {
       // Effacer le message après 5 secondes
       setTimeout(() => setGenerateMessage(null), 5000)
     }
-  }
-
-  const formatDateForAPI = (date: Date) => {
-    return date.toISOString().split('T')[0]
   }
 
   const formatDate = (dateStr: string) => {

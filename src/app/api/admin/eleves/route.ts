@@ -1,7 +1,8 @@
 // API CRUD pour les élèves (superadmin uniquement)
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { eleveSchema, validateRequest } from '@/lib/validation'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 
 /**
  * GET /api/admin/eleves
@@ -17,16 +18,9 @@ export async function GET() {
       ],
     })
 
-    return NextResponse.json({
-      success: true,
-      eleves,
-    })
+    return apiSuccess({ eleves })
   } catch (error) {
-    console.error('Erreur liste élèves:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur liste élèves', error)
   }
 }
 
@@ -41,10 +35,7 @@ export async function POST(request: NextRequest) {
     // Validation avec Zod
     const validation = validateRequest(eleveSchema, body)
     if (!validation.success) {
-      return NextResponse.json(
-        { success: false, error: validation.error },
-        { status: 400 }
-      )
+      return apiError(validation.error, 400)
     }
 
     const { nom, prenom, niveau, sexe } = validation.data
@@ -60,15 +51,8 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({
-      success: true,
-      eleve,
-    })
+    return apiSuccess({ eleve })
   } catch (error) {
-    console.error('Erreur création élève:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur création élève', error)
   }
 }

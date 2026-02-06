@@ -1,6 +1,7 @@
 // API pour récupérer l'historique des appels
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { apiSuccess, apiServerError, getDateRange } from '@/lib/api-helpers'
 
 /**
  * GET /api/admin/appels?date=2024-01-15&niveau=6eme&sexe=F
@@ -16,18 +17,13 @@ export async function GET(request: NextRequest) {
     // Construire les filtres
     const where: any = {}
 
-    // Filtre par date si fourni (plage sur toute la journée)
+    // Filtre par date si fourni (plage sur toute la journée) - FIX BUG TIMEZONE
     if (dateParam) {
-      const date = new Date(dateParam)
-      const startOfDay = new Date(date)
-      startOfDay.setHours(0, 0, 0, 0)
-
-      const endOfDay = new Date(date)
-      endOfDay.setHours(23, 59, 59, 999)
+      const { start, end } = getDateRange(dateParam)
 
       where.date = {
-        gte: startOfDay,
-        lte: endOfDay,
+        gte: start,
+        lte: end,
       }
     }
 
@@ -92,16 +88,11 @@ export async function GET(request: NextRequest) {
       return acc
     }, {} as Record<string, any>)
 
-    return NextResponse.json({
-      success: true,
+    return apiSuccess({
       groups: Object.values(grouped),
       total: appels.length,
     })
   } catch (error) {
-    console.error('Erreur récupération appels:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur récupération appels', error)
   }
 }

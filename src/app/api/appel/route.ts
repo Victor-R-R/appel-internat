@@ -1,7 +1,8 @@
 // API pour sauvegarder et récupérer les appels
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { appelCompletSchema, validateRequest } from '@/lib/validation'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 
 /**
  * GET /api/appel?niveau=6eme&date=2024-01-15
@@ -14,10 +15,7 @@ export async function GET(request: NextRequest) {
     const dateParam = searchParams.get('date')
 
     if (!niveau) {
-      return NextResponse.json(
-        { success: false, error: 'Niveau requis' },
-        { status: 400 }
-      )
+      return apiError('Niveau requis', 400)
     }
 
     // Date du jour ou date fournie
@@ -55,8 +53,7 @@ export async function GET(request: NextRequest) {
 
     // Si aucun appel trouvé
     if (appels.length === 0) {
-      return NextResponse.json({
-        success: true,
+      return apiSuccess({
         appels: [],
         exists: false,
       })
@@ -70,19 +67,14 @@ export async function GET(request: NextRequest) {
       eleve: appel.eleve,
     }))
 
-    return NextResponse.json({
-      success: true,
+    return apiSuccess({
       appels: formattedAppels,
       exists: true,
       aed: appels[0].aed, // Info de l'AED qui a fait l'appel
       date: appels[0].date,
     })
   } catch (error) {
-    console.error('Erreur récupération appel:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur récupération appel', error)
   }
 }
 
@@ -98,10 +90,7 @@ export async function POST(request: NextRequest) {
     // Validation avec Zod
     const validation = validateRequest(appelCompletSchema, body)
     if (!validation.success) {
-      return NextResponse.json(
-        { success: false, error: validation.error },
-        { status: 400 }
-      )
+      return apiError(validation.error, 400)
     }
 
     const { aedId, niveau, appels } = validation.data
@@ -132,15 +121,10 @@ export async function POST(request: NextRequest) {
       })),
     })
 
-    return NextResponse.json({
-      success: true,
+    return apiSuccess({
       count: result.count, // Nombre d'appels créés
     })
   } catch (error) {
-    console.error('Erreur sauvegarde appel:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur sauvegarde appel', error)
   }
 }

@@ -13,7 +13,9 @@ const globalForPrisma = globalThis as unknown as {
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: ['query', 'error', 'warn'], // Logs SQL en dev (pratique pour apprendre)
+    log: process.env.NODE_ENV === 'development'
+      ? ['query', 'error', 'warn'] // Logs SQL en dev (pratique pour apprendre)
+      : ['error'], // En production, seulement les erreurs
   })
 
 // En dev, on stocke le client dans global pour le réutiliser

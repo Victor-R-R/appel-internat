@@ -1,6 +1,7 @@
 // API pour récupérer tous les récaps (superadmin uniquement)
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { apiSuccess, apiServerError, normalizeDate } from '@/lib/api-helpers'
 
 /**
  * GET /api/admin/recaps
@@ -14,17 +15,13 @@ export async function GET(request: NextRequest) {
 
     if (dateParam) {
       // Récupérer un récap spécifique
-      const targetDate = new Date(dateParam)
-      targetDate.setUTCHours(0, 0, 0, 0)
+      const targetDate = normalizeDate(dateParam)
 
       const recap = await prisma.recap.findUnique({
         where: { date: targetDate },
       })
 
-      return NextResponse.json({
-        success: true,
-        recap,
-      })
+      return apiSuccess({ recap })
     }
 
     // Récupérer tous les récaps
@@ -32,15 +29,8 @@ export async function GET(request: NextRequest) {
       orderBy: { date: 'desc' },
     })
 
-    return NextResponse.json({
-      success: true,
-      recaps,
-    })
+    return apiSuccess({ recaps })
   } catch (error) {
-    console.error('Erreur liste récaps:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur liste récaps', error)
   }
 }

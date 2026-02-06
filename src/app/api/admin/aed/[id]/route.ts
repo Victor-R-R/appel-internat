@@ -1,7 +1,9 @@
 // API pour modifier/supprimer un AED spécifique
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
+import { isAdminRole } from '@/lib/constants'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -22,10 +24,7 @@ export async function PATCH(
 
     // Validation basique
     if (!email || !nom || !prenom) {
-      return NextResponse.json(
-        { success: false, error: 'Email, nom et prénom sont requis' },
-        { status: 400 }
-      )
+      return apiError('Email, nom et prénom sont requis', 400)
     }
 
     // Vérifier que l'utilisateur existe
@@ -34,10 +33,7 @@ export async function PATCH(
     })
 
     if (!existing) {
-      return NextResponse.json(
-        { success: false, error: 'Utilisateur non trouvé' },
-        { status: 404 }
-      )
+      return apiError('Utilisateur non trouvé', 404)
     }
 
     // Vérifier que l'email n'est pas déjà pris par un autre utilisateur
@@ -47,17 +43,13 @@ export async function PATCH(
       })
 
       if (emailTaken) {
-        return NextResponse.json(
-          { success: false, error: 'Cet email est déjà utilisé' },
-          { status: 400 }
-        )
+        return apiError('Cet email est déjà utilisé', 400)
       }
     }
 
     // Déterminer le rôle (garder l'existant si non fourni)
     const userRole = role || existing.role
-    const adminRoles = ['cpe', 'manager', 'superadmin']
-    const isAdminRole = adminRoles.includes(userRole)
+    const isAdmin = isAdminRole(userRole)
 
     // Préparer les données de mise à jour
     const updateData: {
@@ -73,8 +65,8 @@ export async function PATCH(
       nom,
       prenom,
       role: userRole,
-      niveau: isAdminRole ? null : (niveau || existing.niveau),
-      sexeGroupe: isAdminRole ? null : (sexeGroupe || existing.sexeGroupe),
+      niveau: isAdmin ? null : (niveau || existing.niveau),
+      sexeGroupe: isAdmin ? null : (sexeGroupe || existing.sexeGroupe),
     }
 
     // Hasher le nouveau mot de passe si fourni
@@ -97,16 +89,11 @@ export async function PATCH(
       },
     })
 
-    return NextResponse.json({
-      success: true,
+    return apiSuccess({
       aed: user, // Garde le même nom pour compatibilité
     })
   } catch (error) {
-    console.error('Erreur modification utilisateur:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur modification utilisateur', error)
   }
 }
 
@@ -127,10 +114,7 @@ export async function DELETE(
     })
 
     if (!existing) {
-      return NextResponse.json(
-        { success: false, error: 'Utilisateur non trouvé' },
-        { status: 404 }
-      )
+      return apiError('Utilisateur non trouvé', 404)
     }
 
     // Supprimer l'utilisateur (les appels associés seront supprimés en cascade si configuré)
@@ -138,14 +122,8 @@ export async function DELETE(
       where: { id },
     })
 
-    return NextResponse.json({
-      success: true,
-    })
+    return apiSuccess({})
   } catch (error) {
-    console.error('Erreur suppression utilisateur:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur suppression utilisateur', error)
   }
 }

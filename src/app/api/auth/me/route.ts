@@ -3,8 +3,8 @@
  * GET /api/auth/me
  */
 
-import { NextResponse } from 'next/server'
 import { getSession } from '@/lib/jwt'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 
 export async function GET() {
   try {
@@ -12,15 +12,11 @@ export async function GET() {
     const session = await getSession()
 
     if (!session) {
-      return NextResponse.json(
-        { success: false, error: 'Non authentifié' },
-        { status: 401 }
-      )
+      return apiError('Non authentifié', 401)
     }
 
     // Retourner les infos utilisateur
-    return NextResponse.json({
-      success: true,
+    return apiSuccess({
       user: {
         id: session.userId,
         email: session.email,
@@ -32,10 +28,6 @@ export async function GET() {
       },
     })
   } catch (error) {
-    console.error('Erreur /api/auth/me:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur /api/auth/me', error)
   }
 }

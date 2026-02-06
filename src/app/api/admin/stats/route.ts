@@ -1,6 +1,6 @@
 // API pour les statistiques globales (admin uniquement)
-import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { apiSuccess, apiServerError } from '@/lib/api-helpers'
 
 /**
  * GET /api/admin/stats
@@ -20,8 +20,7 @@ export async function GET() {
       prisma.recap.count(),
     ])
 
-    return NextResponse.json({
-      success: true,
+    return apiSuccess({
       stats: {
         totalAED,
         totalEleves,
@@ -30,10 +29,6 @@ export async function GET() {
       },
     })
   } catch (error) {
-    console.error('Erreur stats admin:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur stats admin', error)
   }
 }

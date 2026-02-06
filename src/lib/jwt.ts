@@ -5,6 +5,7 @@
 
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
+import { ADMIN_ROLES } from './constants'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-dev-only'
 const secret = new TextEncoder().encode(JWT_SECRET)
@@ -110,5 +111,5 @@ export async function isSuperAdmin(): Promise<boolean> {
  */
 export async function hasAdminAccess(): Promise<boolean> {
   const session = await getSession()
-  return ['cpe', 'manager', 'superadmin'].includes(session?.role || '')
+  return ADMIN_ROLES.includes(session?.role as any || '')
 }

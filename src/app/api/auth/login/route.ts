@@ -7,6 +7,7 @@ import { verifyPassword } from '@/lib/auth'
 import { createToken, setAuthCookie } from '@/lib/jwt'
 import { loginSchema, validateRequest } from '@/lib/validation'
 import { checkRateLimit, resetRateLimit, getClientIp } from '@/lib/rate-limit'
+import { apiSuccess, apiError, apiServerError } from '@/lib/api-helpers'
 
 /**
  * POST /api/auth/login
@@ -43,10 +44,7 @@ export async function POST(request: NextRequest) {
     const validation = validateRequest(loginSchema, body)
 
     if (!validation.success) {
-      return NextResponse.json(
-        { success: false, error: validation.error },
-        { status: 400 }
-      )
+      return apiError(validation.error)
     }
 
     const { email, password } = validation.data
@@ -57,20 +55,14 @@ export async function POST(request: NextRequest) {
     })
 
     if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Email ou mot de passe incorrect' },
-        { status: 401 }
-      )
+      return apiError('Email ou mot de passe incorrect', 401)
     }
 
     // 4. Vérifier le mot de passe (compare avec le hash bcrypt)
     const isValid = await verifyPassword(password, user.password)
 
     if (!isValid) {
-      return NextResponse.json(
-        { success: false, error: 'Email ou mot de passe incorrect' },
-        { status: 401 }
-      )
+      return apiError('Email ou mot de passe incorrect', 401)
     }
 
     // 5. Login réussi → réinitialiser le rate limit pour cette IP
@@ -93,15 +85,8 @@ export async function POST(request: NextRequest) {
     // 8. Retourner succès (sans données sensibles, le cookie contient tout)
     const { password: _, ...userWithoutPassword } = user
 
-    return NextResponse.json({
-      success: true,
-      user: userWithoutPassword,
-    })
+    return apiSuccess({ user: userWithoutPassword })
   } catch (error) {
-    console.error('Erreur login:', error)
-    return NextResponse.json(
-      { success: false, error: 'Erreur serveur' },
-      { status: 500 }
-    )
+    return apiServerError('Erreur login', error)
   }
 }

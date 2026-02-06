@@ -7,19 +7,10 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-
-type User = {
-  id: string
-  email: string
-  role: string
-  nom?: string
-  prenom?: string
-  niveau?: string | null
-  sexeGroupe?: string | null
-}
+import type { UserDTO } from '@/lib/types'
 
 export function useAuth(options?: { redirectTo?: string; requireAuth?: boolean }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<UserDTO | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()

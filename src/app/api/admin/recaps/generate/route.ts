@@ -1,7 +1,8 @@
 // API pour générer le récap quotidien avec IA
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { genererRecapAvecIA } from '@/lib/ai-recap'
+import { apiSuccess, apiError, apiServerError, normalizeDate } from '@/lib/api-helpers'
 
 /**
  * POST /api/admin/recaps/generate
@@ -17,11 +18,14 @@ export async function POST(request: NextRequest) {
     const { date: dateParam } = body
 
     // Date cible : hier par défaut (car on génère le lendemain matin)
-    const targetDate = dateParam ? new Date(dateParam) : new Date()
-    if (!dateParam) {
-      targetDate.setDate(targetDate.getDate() - 1)
+    let targetDate: Date
+    if (dateParam) {
+      targetDate = normalizeDate(dateParam)
+    } else {
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      targetDate = normalizeDate(yesterday)
     }
-    targetDate.setUTCHours(0, 0, 0, 0)
 
     console.log(`[Génération récap] Date: ${targetDate.toISOString()}`)
 
@@ -51,10 +55,7 @@ export async function POST(request: NextRequest) {
 
     if (appels.length === 0) {
       console.log('[Génération récap] Aucune observation trouvée')
-      return NextResponse.json({
-        success: false,
-        error: 'Aucune observation trouvée pour cette date',
-      }, { status: 404 })
+      return apiError('Aucune observation trouvée pour cette date', 404)
     }
 
     console.log(`[Génération récap] ${appels.length} observation(s) trouvée(s)`)
@@ -96,8 +97,7 @@ export async function POST(request: NextRequest) {
       console.log('[Génération récap] Nouveau récap créé')
     }
 
-    return NextResponse.json({
-      success: true,
+    return apiSuccess({
       recap: {
         id: recap.id,
         date: recap.date,
@@ -106,13 +106,7 @@ export async function POST(request: NextRequest) {
       observationsCount: appels.length,
     })
   } catch (error) {
-    console.error('[Génération récap] Erreur:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Erreur serveur',
-      },
-      { status: 500 }
-    )
+    // FIX BUG ERROR LEAK : ne jamais exposer error.message au client
+    return apiServerError('[Génération récap] Erreur', error)
   }
 }

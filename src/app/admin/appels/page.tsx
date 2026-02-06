@@ -3,21 +3,11 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth, useLogout } from '@/hooks/useAuth'
+import type { EleveDTO, AedSlim } from '@/lib/types'
+import { NIVEAUX } from '@/lib/constants'
 
-type Eleve = {
-  id: string
-  nom: string
-  prenom: string
-  niveau: string
-  sexe: string
-}
-
-type AED = {
-  id: string
-  nom: string
-  prenom: string
-  email: string
-}
+type Eleve = EleveDTO
+type AED = AedSlim
 
 type AppelItem = {
   id: string
@@ -33,7 +23,7 @@ type AppelGroup = {
   appels: AppelItem[]
 }
 
-const NIVEAUX = ['tous', '6eme', '5eme', '4eme', '3eme', '2nde', '1ere', 'Tle']
+const NIVEAUX_AVEC_TOUS = ['tous', ...NIVEAUX]
 
 export default function HistoriqueAppelsPage() {
   const { user, loading: authLoading } = useAuth({
@@ -214,7 +204,7 @@ export default function HistoriqueAppelsPage() {
                 }}
                 className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
               >
-                {NIVEAUX.map((niveau) => (
+                {NIVEAUX_AVEC_TOUS.map((niveau) => (
                   <option key={niveau} value={niveau}>
                     {niveau === 'tous' ? 'Tous les niveaux' : niveau}
                   </option>

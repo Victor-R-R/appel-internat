@@ -3,31 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth, useLogout } from '@/hooks/useAuth'
-
-// Types TypeScript (comme des classes Python mais juste pour la structure)
-type User = {
-  id: string
-  email: string
-  role: string
-  nom?: string
-  prenom?: string
-  niveau?: string | null
-  sexeGroupe?: string | null
-}
-
-type Eleve = {
-  id: string
-  nom: string
-  prenom: string
-  niveau: string
-  sexe: string
-}
-
-type AppelData = {
-  eleveId: string
-  statut: 'present' | 'acf' | 'absent'
-  observation: string
-}
+import type { EleveDTO, AppelData } from '@/lib/types'
+import { ADMIN_ROLES, NIVEAUX } from '@/lib/constants'
 
 export default function AppelPage() {
   const router = useRouter()
@@ -40,7 +17,7 @@ export default function AppelPage() {
   const logout = useLogout()
 
   // State
-  const [eleves, setEleves] = useState<Eleve[]>([])
+  const [eleves, setEleves] = useState<EleveDTO[]>([])
   const [appels, setAppels] = useState<Record<string, AppelData>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -55,8 +32,7 @@ export default function AppelPage() {
    */
   useEffect(() => {
     if (!authLoading && user) {
-      const adminRoles = ['cpe', 'manager', 'superadmin']
-      if (adminRoles.includes(user.role)) {
+      if (ADMIN_ROLES.includes(user.role)) {
         router.push('/admin/dashboard')
       }
     }
@@ -121,7 +97,7 @@ export default function AppelPage() {
         setAppelExists(false)
 
         const initialAppels: Record<string, AppelData> = {}
-        elevesData.eleves.forEach((eleve: Eleve) => {
+        elevesData.eleves.forEach((eleve: EleveDTO) => {
           initialAppels[eleve.id] = {
             eleveId: eleve.id,
             statut: 'present',
@@ -204,7 +180,6 @@ export default function AppelPage() {
   if (!user) return null
 
   const groupeLabel = selectedSexeGroupe === 'F' ? 'Filles' : 'Garçons'
-  const niveaux = ['6eme', '5eme', '4eme', '3eme', '2nde', '1ere', 'Tle']
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -245,7 +220,7 @@ export default function AppelPage() {
                 className="w-full rounded-md border border-white/20 bg-white/10 px-4 py-2 text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white backdrop-blur-sm"
                 style={{ color: 'white' }}
               >
-                {niveaux.map((niveau) => (
+                {NIVEAUX.map((niveau) => (
                   <option key={niveau} value={niveau} style={{ color: '#333' }}>
                     {niveau}
                   </option>

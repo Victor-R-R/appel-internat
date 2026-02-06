@@ -4,17 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { jwtVerify } from 'jose'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-dev-only'
-const secret = new TextEncoder().encode(JWT_SECRET)
-
-type JWTPayload = {
-  userId: string
-  email: string
-  role: string
-  niveau?: string | null
-}
+import { verifyToken, type JWTPayload } from '@/lib/jwt'
+import { ADMIN_ROLES } from '@/lib/constants'
 
 /**
  * Vérifie le JWT depuis les cookies
@@ -24,13 +15,7 @@ async function verifyAuth(request: NextRequest): Promise<JWTPayload | null> {
 
   if (!token) return null
 
-  try {
-    const { payload } = await jwtVerify(token, secret)
-    return payload as JWTPayload
-  } catch (error) {
-    console.error('JWT verification failed in middleware:', error)
-    return null
-  }
+  return verifyToken(token)
 }
 
 export async function middleware(request: NextRequest) {
@@ -63,7 +48,6 @@ export async function middleware(request: NextRequest) {
 
   // Routes admin (nécessitent role cpe, manager ou superadmin)
   const adminRoutes = ['/admin', '/api/admin']
-  const adminRoles = ['cpe', 'manager', 'superadmin']
   if (adminRoutes.some((route) => pathname.startsWith(route))) {
     if (!session) {
       if (pathname.startsWith('/api')) {
@@ -75,7 +59,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    if (!adminRoles.includes(session.role)) {
+    if (!ADMIN_ROLES.includes(session.role as any)) {
       if (pathname.startsWith('/api')) {
         return NextResponse.json(
           { success: false, error: 'Accès interdit - Droits admin requis (CPE/Manager/Superadmin)' },
@@ -94,7 +78,7 @@ export async function middleware(request: NextRequest) {
     if (!session) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
-    if (adminRoles.includes(session.role)) {
+    if (ADMIN_ROLES.includes(session.role as any)) {
       return NextResponse.redirect(new URL('/admin/dashboard', request.url))
     }
     return NextResponse.redirect(new URL('/appel', request.url))
