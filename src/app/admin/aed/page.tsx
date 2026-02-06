@@ -174,7 +174,7 @@ export default function GestionAEDPage() {
             </div>
             <button
               onClick={() => setShowForm(true)}
-              className="rounded-md bg-white px-4 py-2 text-sm font-semibold hover:bg-white/90 transition-all"
+              className="rounded-md bg-white px-4 py-2 text-sm font-semibold hover:bg-white/90 transition-all cursor-pointer"
               style={{ color: '#0C71C3' }}
             >
               + Ajouter un utilisateur
