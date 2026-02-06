@@ -4,6 +4,9 @@
 
 import type { Niveau, Role, Statut, Sexe } from './constants';
 
+// Re-export types for convenience
+export type { Role, Niveau, Statut, Sexe };
+
 /**
  * User DTO (sans password) - utilisé pour les réponses API et le frontend
  */
@@ -37,6 +40,8 @@ export type AedSlim = {
   role: Role;
   nom?: string;
   prenom?: string;
+  niveau?: Niveau | null;
+  sexeGroupe?: Sexe | null;
 };
 
 /**

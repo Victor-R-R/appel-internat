@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth, useLogout } from '@/hooks/useAuth'
+import { AdminHeader } from '@/components/ui/AdminHeader'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { Badge } from '@/components/ui/Badge'
+import { NiveauSelect } from '@/components/forms/NiveauSelect'
 import type { EleveDTO, AedSlim } from '@/lib/types'
 import { NIVEAUX } from '@/lib/constants'
 
@@ -22,8 +26,6 @@ type AppelGroup = {
   aed: AED
   appels: AppelItem[]
 }
-
-const NIVEAUX_AVEC_TOUS = ['tous', ...NIVEAUX]
 
 export default function HistoriqueAppelsPage() {
   const { user, loading: authLoading } = useAuth({
@@ -127,49 +129,34 @@ export default function HistoriqueAppelsPage() {
   }
 
   if (authLoading || loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-600">Chargement...</p>
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (!user) return null
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header
-        className="shadow-lg"
-        style={{ background: 'linear-gradient(to right, #0C71C3, #4d8dc1)' }}
-      >
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white">
-                📊 Historique des appels
-              </h1>
-              <p className="mt-1 text-sm text-white/80">
-                {user.email} • Consultation des appels • Internat d&apos;Excellence de Sourdun
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Link
-                href="/admin/dashboard"
-                className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all"
-              >
-                ← Retour
-              </Link>
-              <button
-                onClick={logout}
-                className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all"
-              >
-                Déconnexion
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AdminHeader
+        title="📊 Historique des appels"
+        subtitle={`${user.email} • Consultation des appels • Internat d'Excellence de Sourdun`}
+        variant="blue"
+        actions={
+          <>
+            <Link
+              href="/admin/dashboard"
+              className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all"
+            >
+              ← Retour
+            </Link>
+            <button
+              onClick={logout}
+              className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all cursor-pointer"
+            >
+              Déconnexion
+            </button>
+          </>
+        }
+      />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Filtres */}
@@ -193,23 +180,18 @@ export default function HistoriqueAppelsPage() {
               <label className="mb-2 block text-sm font-medium text-gray-700">
                 🎓 Niveau
               </label>
-              <select
+              <NiveauSelect
                 value={selectedNiveau}
-                onChange={(e) => {
-                  setSelectedNiveau(e.target.value)
+                onChange={(value) => {
+                  setSelectedNiveau(value)
                   // Réinitialiser le filtre sexe si on choisit "tous"
-                  if (e.target.value === 'tous') {
+                  if (value === 'tous') {
                     setSelectedSexe('tous')
                   }
                 }}
+                includeAll={true}
                 className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
-              >
-                {NIVEAUX_AVEC_TOUS.map((niveau) => (
-                  <option key={niveau} value={niveau}>
-                    {niveau === 'tous' ? 'Tous les niveaux' : niveau}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             {/* Filtre Sexe - Apparaît uniquement si un niveau spécifique est sélectionné */}
@@ -247,148 +229,95 @@ export default function HistoriqueAppelsPage() {
           </div>
 
           {/* Afficher le nombre de résultats si recherche active */}
-          {searchQuery.trim() && (
-            <div className="mt-4 rounded-md bg-blue-50 px-4 py-2 text-sm text-blue-800">
-              {getTotalResults()} élève(s) trouvé(s) pour &ldquo;{searchQuery}&rdquo;
-              <button
-                onClick={() => setSearchQuery('')}
-                className="ml-2 font-medium underline hover:no-underline"
-              >
-                Effacer
-              </button>
+          {searchQuery && (
+            <div className="mt-4 text-sm text-gray-600">
+              {getTotalResults()} résultat(s) trouvé(s) pour &ldquo;{searchQuery}&rdquo;
             </div>
           )}
         </div>
 
-        {/* Affichage des appels */}
-        {groups.length === 0 ? (
+        {/* Liste des groupes d'appels */}
+        {getFilteredGroups().length === 0 ? (
           <div className="rounded-lg bg-white p-12 text-center shadow">
-            <p className="text-gray-500">
-              Aucun appel trouvé pour les critères sélectionnés
-            </p>
-          </div>
-        ) : getFilteredGroups().length === 0 ? (
-          <div className="rounded-lg bg-white p-12 text-center shadow">
-            <p className="text-gray-500">
-              Aucun élève ne correspond à votre recherche
-            </p>
+            <p className="text-gray-500">Aucun appel trouvé pour les filtres sélectionnés</p>
           </div>
         ) : (
           <div className="space-y-6">
-            {getFilteredGroups().map((group, idx) => {
+            {getFilteredGroups().map((group, index) => {
               const stats = getStats(group.appels)
               return (
                 <div
-                  key={idx}
+                  key={index}
                   className="overflow-hidden rounded-lg bg-white shadow"
                 >
                   {/* En-tête du groupe */}
                   <div
-                    className="px-6 py-4"
-                    style={{ background: 'linear-gradient(to right, #0C71C3, #4d8dc1)' }}
+                    className="bg-gradient-to-r from-[#0C71C3] to-[#4d8dc1] px-6 py-4 text-white"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
                       <div>
-                        <h2 className="text-xl font-bold text-white">
-                          {group.niveau}
-                        </h2>
-                        <p className="text-sm text-white/80">
-                          {formatDate(group.date)}
+                        <h3 className="text-lg font-bold">
+                          📚 {group.niveau} •{' '}
+                          {group.aed.sexeGroupe === 'F' ? 'Filles' : 'Garçons'}
+                        </h3>
+                        <p className="mt-1 text-sm opacity-90">
+                          📅 {formatDate(group.date)} • Par {group.aed.prenom} {group.aed.nom}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-white/80">
-                          Appel effectué par
-                        </p>
-                        <p className="font-semibold text-white">
-                          {group.aed.prenom} {group.aed.nom}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Statistiques */}
-                    <div className="mt-4 grid grid-cols-4 gap-4 rounded-md bg-white/10 p-3">
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-white">
-                          {stats.total}
-                        </p>
-                        <p className="text-xs text-white/70">Total</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-white">
-                          {stats.presents}
-                        </p>
-                        <p className="text-xs text-white/70">Présents</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-white">
-                          {stats.acf}
-                        </p>
-                        <p className="text-xs text-white/70">ACF</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-bold text-white">
-                          {stats.absents}
-                        </p>
-                        <p className="text-xs text-white/70">Absents</p>
+                      <div className="flex gap-3">
+                        <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium">
+                          ✓ {stats.presents} Présent(s)
+                        </span>
+                        <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium">
+                          ACF {stats.acf}
+                        </span>
+                        <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium">
+                          ✗ {stats.absents} Absent(s)
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Liste des élèves */}
+                  {/* Liste des appels */}
                   <div className="divide-y divide-gray-200">
                     {group.appels.map((appel) => (
                       <div
                         key={appel.id}
-                        className="px-6 py-4 hover:bg-gray-50 transition-colors"
+                        className={`px-6 py-4 ${appel.statut === 'absent' ? 'bg-red-50' : ''}`}
                       >
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            {/* Nom élève */}
-                            <div>
-                              <p className="font-semibold text-gray-900">
-                                {appel.eleve.nom} {appel.eleve.prenom}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                {appel.eleve.sexe === 'M' ? 'Garçon' : 'Fille'}
-                              </p>
-                            </div>
-
-                            {/* Badge statut */}
-                            <div>
-                              {appel.statut === 'present' && (
-                                <span
-                                  className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-white"
-                                  style={{ backgroundColor: '#7EBEC5' }}
-                                >
-                                  ✓ Présent
-                                </span>
-                              )}
-                              {appel.statut === 'acf' && (
-                                <span
-                                  className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-white"
-                                  style={{ backgroundColor: '#4d8dc1' }}
-                                >
-                                  ACF
-                                </span>
-                              )}
-                              {appel.statut === 'absent' && (
-                                <span className="inline-flex items-center rounded-full bg-red-600 px-3 py-1 text-xs font-medium text-white">
-                                  ✗ Absent
-                                </span>
-                              )}
-                            </div>
+                          {/* Infos élève */}
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {appel.eleve.nom} {appel.eleve.prenom}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {appel.eleve.sexe === 'M' ? 'Garçon' : 'Fille'}
+                            </p>
                           </div>
 
-                          {/* Observation si présente */}
-                          {appel.observation && (
-                            <div className="max-w-md">
-                              <p className="text-sm italic text-gray-600">
-                                &ldquo;{appel.observation}&rdquo;
-                              </p>
-                            </div>
-                          )}
+                          {/* Badge statut */}
+                          <div>
+                            {appel.statut === 'present' && (
+                              <Badge variant="present">✓ Présent</Badge>
+                            )}
+                            {appel.statut === 'acf' && (
+                              <Badge variant="acf">ACF</Badge>
+                            )}
+                            {appel.statut === 'absent' && (
+                              <Badge variant="absent">✗ Absent</Badge>
+                            )}
+                          </div>
                         </div>
+
+                        {/* Observation si présente */}
+                        {appel.observation && (
+                          <div className="mt-2 max-w-md">
+                            <p className="text-sm italic text-gray-600">
+                              &ldquo;{appel.observation}&rdquo;
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

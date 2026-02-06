@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth, useLogout } from '@/hooks/useAuth'
+import { AdminHeader } from '@/components/ui/AdminHeader'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
 type Stats = {
   totalAED: number
@@ -42,38 +44,27 @@ export default function AdminDashboard() {
   }
 
   if (authLoading || loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-600">Chargement...</p>
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (!user) return null
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="shadow-lg" style={{ background: 'linear-gradient(to right, #0C71C3, #4d8dc1)' }}>
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white">
-                🔐 Administration
-              </h1>
-              <p className="mt-1 text-sm text-white/80">
-                {user.email} • {user.role === 'superadmin' ? 'Superadmin' : user.role === 'cpe' ? 'CPE' : user.role === 'manager' ? 'Manager' : 'AED'} • Internat d&apos;Excellence de Sourdun
-              </p>
-            </div>
-            <button
-              onClick={logout}
-              className="btn-primary rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all"
-            >
-              Déconnexion
-            </button>
-          </div>
-        </div>
-      </header>
+      <AdminHeader
+        title="🔐 Administration"
+        subtitle={`${user.email} • ${user.role === 'superadmin' ? 'Superadmin' : user.role === 'cpe' ? 'CPE' : user.role === 'manager' ? 'Manager' : 'AED'} • Internat d'Excellence de Sourdun`}
+        variant="blue"
+        showBackLink={false}
+        actions={
+          <button
+            onClick={logout}
+            className="btn-primary rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all cursor-pointer"
+          >
+            Déconnexion
+          </button>
+        }
+      />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Statistiques */}

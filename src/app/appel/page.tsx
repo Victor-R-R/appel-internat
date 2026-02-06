@@ -3,8 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth, useLogout } from '@/hooks/useAuth'
+import { AdminHeader } from '@/components/ui/AdminHeader'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { NiveauSelect } from '@/components/forms/NiveauSelect'
 import type { EleveDTO, AppelData } from '@/lib/types'
-import { ADMIN_ROLES, NIVEAUX } from '@/lib/constants'
+import { ADMIN_ROLES } from '@/lib/constants'
 
 export default function AppelPage() {
   const router = useRouter()
@@ -170,11 +173,7 @@ export default function AppelPage() {
   }
 
   if (authLoading || loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-gray-600">Chargement...</p>
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (!user) return null
@@ -183,49 +182,41 @@ export default function AppelPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="shadow-lg" style={{ background: 'linear-gradient(to right, #0C71C3, #4d8dc1)' }}>
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-white">
-                Appel - {selectedNiveau} {groupeLabel}
-              </h1>
-              <p className="mt-1 text-sm text-white/80">
-                {user.prenom} {user.nom} • {eleves.length} élèves • Internat d&apos;Excellence de Sourdun
+      <AdminHeader
+        title={`Appel - ${selectedNiveau} ${groupeLabel}`}
+        subtitle={`${user.prenom} ${user.nom} • ${eleves.length} élèves • Internat d'Excellence de Sourdun`}
+        variant="blue"
+        showBackLink={false}
+        actions={
+          <>
+            {appelExists && (
+              <p className="rounded-md bg-white/20 px-3 py-1 text-xs font-medium text-white">
+                ✓ Appel déjà effectué aujourd&apos;hui - Vous pouvez le modifier jusqu&apos;à minuit
               </p>
-              {appelExists && (
-                <p className="mt-2 inline-block rounded-md bg-white/20 px-3 py-1 text-xs font-medium text-white">
-                  ✓ Appel déjà effectué aujourd&apos;hui - Vous pouvez le modifier jusqu&apos;à minuit
-                </p>
-              )}
-            </div>
+            )}
             <button
               onClick={logout}
-              className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all"
+              className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all cursor-pointer"
             >
               Déconnexion
             </button>
-          </div>
+          </>
+        }
+      />
 
-          {/* Sélecteurs de niveau et groupe */}
-          <div className="mt-6 flex gap-4">
+      {/* Sélecteurs de niveau et groupe */}
+      <div className="shadow-lg" style={{ background: 'linear-gradient(to right, #0C71C3, #4d8dc1)' }}>
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex gap-4">
             <div className="flex-1">
               <label className="mb-2 block text-sm font-medium text-white">
                 🎓 Niveau
               </label>
-              <select
+              <NiveauSelect
                 value={selectedNiveau}
-                onChange={(e) => setSelectedNiveau(e.target.value)}
+                onChange={setSelectedNiveau}
                 className="w-full rounded-md border border-white/20 bg-white/10 px-4 py-2 text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white backdrop-blur-sm"
-                style={{ color: 'white' }}
-              >
-                {NIVEAUX.map((niveau) => (
-                  <option key={niveau} value={niveau} style={{ color: '#333' }}>
-                    {niveau}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
             <div className="flex-1">
               <label className="mb-2 block text-sm font-medium text-white">
@@ -243,7 +234,7 @@ export default function AppelPage() {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Liste des élèves */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -269,7 +260,7 @@ export default function AppelPage() {
               <div className="mb-4 flex gap-2">
                 <button
                   onClick={() => updateStatut(eleve.id, 'present')}
-                  className="rounded-md px-4 py-2 text-sm font-medium transition-all"
+                  className="rounded-md px-4 py-2 text-sm font-medium transition-all cursor-pointer"
                   style={{
                     backgroundColor: appels[eleve.id]?.statut === 'present' ? '#7EBEC5' : '#e2e5ed',
                     color: appels[eleve.id]?.statut === 'present' ? 'white' : '#333333'
@@ -279,7 +270,7 @@ export default function AppelPage() {
                 </button>
                 <button
                   onClick={() => updateStatut(eleve.id, 'acf')}
-                  className="rounded-md px-4 py-2 text-sm font-medium transition-all"
+                  className="rounded-md px-4 py-2 text-sm font-medium transition-all cursor-pointer"
                   style={{
                     backgroundColor: appels[eleve.id]?.statut === 'acf' ? '#4d8dc1' : '#e2e5ed',
                     color: appels[eleve.id]?.statut === 'acf' ? 'white' : '#333333'
@@ -289,13 +280,10 @@ export default function AppelPage() {
                 </button>
                 <button
                   onClick={() => updateStatut(eleve.id, 'absent')}
-                  className={`rounded-md px-4 py-2 text-sm font-medium transition-all ${
-                    appels[eleve.id]?.statut === 'absent'
-                      ? 'bg-red-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-300'
-                  }`}
+                  className="rounded-md px-4 py-2 text-sm font-medium transition-all cursor-pointer"
                   style={{
-                    backgroundColor: appels[eleve.id]?.statut === 'absent' ? '#dc2626' : '#e2e5ed'
+                    backgroundColor: appels[eleve.id]?.statut === 'absent' ? '#dc2626' : '#e2e5ed',
+                    color: appels[eleve.id]?.statut === 'absent' ? 'white' : '#333333'
                   }}
                 >
                   ✗ Absent
