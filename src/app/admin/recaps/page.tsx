@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth, useLogout } from '@/hooks/useAuth'
+import { useToast } from '@/contexts/ToastContext'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderLinkButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -18,6 +19,7 @@ type Recap = {
 
 export default function RecapsPage() {
   const router = useRouter()
+  const toast = useToast()
   const { user, loading: authLoading } = useAuth({ requireAuth: true, redirectTo: '/login' })
   const logout = useLogout()
   const [recaps, setRecaps] = useState<Recap[]>([])
@@ -26,13 +28,12 @@ export default function RecapsPage() {
   const [loading, setLoading] = useState(true)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [generating, setGenerating] = useState(false)
-  const [generateMessage, setGenerateMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     if (authLoading) return
 
     if (user && !ADMIN_ROLES.includes(user.role)) {
-      alert('⛔ Accès réservé aux CPE, Managers et Superadmins')
+      toast.error('Accès réservé aux CPE, Managers et Superadmins')
       router.push('/appel')
       return
     }
@@ -40,7 +41,7 @@ export default function RecapsPage() {
     if (user) {
       loadRecaps()
     }
-  }, [user, authLoading, router])
+  }, [user, authLoading, router, toast])
 
   useEffect(() => {
     // Charger le récap du jour sélectionné
@@ -88,7 +89,6 @@ export default function RecapsPage() {
     }
 
     setGenerating(true)
-    setGenerateMessage(null)
 
     try {
       const response = await fetch('/api/admin/recaps/generate', {
@@ -100,28 +100,20 @@ export default function RecapsPage() {
       const data = await response.json()
 
       if (data.success) {
-        setGenerateMessage({
-          type: 'success',
-          text: `✅ Récap généré avec succès ! (${data.observationsCount} observation(s) traitée(s))`,
-        })
+        toast.success(
+          `Récap généré avec succès ! (${data.observationsCount} observation(s) traitée(s))`,
+          6000 // Durée plus longue pour laisser le temps de lire
+        )
         // Recharger le récap et la liste
         await Promise.all([loadRecapForDate(targetDate), loadRecaps()])
       } else {
-        setGenerateMessage({
-          type: 'error',
-          text: `❌ ${data.error || 'Erreur lors de la génération'}`,
-        })
+        toast.error(data.error || 'Erreur lors de la génération')
       }
     } catch (error) {
       console.error('Erreur génération récap:', error)
-      setGenerateMessage({
-        type: 'error',
-        text: '❌ Erreur de connexion',
-      })
+      toast.error('Erreur de connexion au serveur')
     } finally {
       setGenerating(false)
-      // Effacer le message après 5 secondes
-      setTimeout(() => setGenerateMessage(null), 5000)
     }
   }
 
@@ -285,19 +277,6 @@ export default function RecapsPage() {
             <h2 className="mb-4 text-lg font-bold text-gray-900">
               Récap du {formatDate(selectedDate.toISOString())}
             </h2>
-
-            {/* Message de génération */}
-            {generateMessage && (
-              <div
-                className={`mb-4 rounded-md p-4 ${
-                  generateMessage.type === 'success'
-                    ? 'bg-green-50 text-green-800'
-                    : 'bg-red-50 text-red-800'
-                }`}
-              >
-                {generateMessage.text}
-              </div>
-            )}
 
             {currentRecap ? (
               <div>

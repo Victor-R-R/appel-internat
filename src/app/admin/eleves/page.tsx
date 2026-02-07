@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useCRUD } from '@/hooks/useCRUD'
+import { useToast } from '@/contexts/ToastContext'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderLinkButton, HeaderActionButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -36,6 +37,7 @@ const INITIAL_FORM_DATA: EleveFormData = {
 
 export default function GestionElevesPage() {
   const router = useRouter()
+  const toast = useToast()
   const { user, loading: authLoading } = useAuth({ requireAuth: true, redirectTo: '/login' })
   const [eleves, setEleves] = useState<Eleve[]>([])
   const [filterNiveau, setFilterNiveau] = useState<string>('tous')
@@ -62,7 +64,7 @@ export default function GestionElevesPage() {
 
     // Seul Superadmin peut gérer les élèves
     if (user && user.role !== 'superadmin') {
-      alert('⛔ Accès réservé aux Superadmins')
+      toast.error('Accès réservé aux Superadmins')
       router.push('/admin/dashboard')
       return
     }
@@ -70,7 +72,7 @@ export default function GestionElevesPage() {
     if (user) {
       crud.reloadItems()
     }
-  }, [user, authLoading, router])
+  }, [user, authLoading, router, toast])
 
   const handleToggleActif = async (eleve: Eleve) => {
     const action = eleve.actif ? 'archiver' : 'réactiver'
@@ -86,13 +88,13 @@ export default function GestionElevesPage() {
       const data = await response.json()
 
       if (data.success) {
-        alert(`✅ Élève ${action === 'archiver' ? 'archivé' : 'réactivé'}`)
+        toast.success(`Élève ${action === 'archiver' ? 'archivé' : 'réactivé'} avec succès`)
         await crud.reloadItems()
       } else {
-        alert('❌ Erreur : ' + data.error)
+        toast.error(data.error || 'Une erreur est survenue')
       }
     } catch (error) {
-      alert('❌ Erreur de connexion')
+      toast.error('Erreur de connexion au serveur')
     }
   }
 
@@ -245,7 +247,8 @@ export default function GestionElevesPage() {
 
         {/* Liste des élèves */}
         <div className="overflow-hidden rounded-lg bg-white shadow">
-          <table className="min-w-full divide-y divide-gray-200">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -254,10 +257,10 @@ export default function GestionElevesPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Niveau
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:table-cell">
                   Sexe
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 md:table-cell">
                   Statut
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -276,12 +279,12 @@ export default function GestionElevesPage() {
                   <td className="whitespace-nowrap px-6 py-4">
                     <Badge variant="info">{eleve.niveau}</Badge>
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4">
+                  <td className="hidden whitespace-nowrap px-6 py-4 sm:table-cell">
                     <div className="text-sm text-gray-500">
                       {eleve.sexe === 'M' ? 'Garçon' : 'Fille'}
                     </div>
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4">
+                  <td className="hidden whitespace-nowrap px-6 py-4 md:table-cell">
                     {eleve.actif ? (
                       <Badge variant="info">Actif</Badge>
                     ) : (
@@ -316,6 +319,7 @@ export default function GestionElevesPage() {
               ))}
             </tbody>
           </table>
+          </div>
 
           {elevesFiltered.length === 0 && (
             <div className="py-12 text-center">

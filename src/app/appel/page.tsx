@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth, useLogout } from '@/hooks/useAuth'
+import { useToast } from '@/contexts/ToastContext'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderActionButton } from '@/components/ui/HeaderButton'
 import { AppelStats } from '@/components/ui/AppelStats'
@@ -13,6 +14,7 @@ import { ADMIN_ROLES } from '@/lib/constants'
 
 export default function AppelPage() {
   const router = useRouter()
+  const toast = useToast()
 
   // Authentification via hook (récupère depuis JWT cookie)
   const { user, loading: authLoading } = useAuth({
@@ -174,15 +176,15 @@ export default function AppelPage() {
 
       if (data.success) {
         const message = appelExists
-          ? '✅ Appel modifié avec succès !'
-          : '✅ Appel enregistré avec succès !'
-        alert(message)
+          ? 'Appel modifié avec succès !'
+          : 'Appel enregistré avec succès !'
+        toast.success(message)
         setAppelExists(true) // Maintenant l'appel existe
       } else {
-        alert('❌ Erreur : ' + data.error)
+        toast.error(data.error || 'Une erreur est survenue')
       }
     } catch (error) {
-      alert('❌ Erreur de connexion')
+      toast.error('Erreur de connexion au serveur')
     } finally {
       setSaving(false)
     }
