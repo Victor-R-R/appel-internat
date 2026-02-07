@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth, useLogout } from '@/hooks/useAuth'
 import { useToast } from '@/contexts/ToastContext'
+import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderActionButton } from '@/components/ui/HeaderButton'
 import { AppelStats } from '@/components/ui/AppelStats'
@@ -13,6 +14,7 @@ import type { EleveDTO, AppelData } from '@/lib/types'
 import { ADMIN_ROLES } from '@/lib/constants'
 
 export default function AppelPage() {
+  useScrollToTop()
   const router = useRouter()
   const toast = useToast()
 

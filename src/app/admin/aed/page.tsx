@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useCRUD } from '@/hooks/useCRUD'
 import { useToast } from '@/contexts/ToastContext'
+import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderLinkButton, HeaderActionButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -46,6 +47,7 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 export default function GestionAEDPage() {
+  useScrollToTop()
   const router = useRouter()
   const toast = useToast()
   const { user, loading: authLoading } = useAuth({ requireAuth: true, redirectTo: '/login' })

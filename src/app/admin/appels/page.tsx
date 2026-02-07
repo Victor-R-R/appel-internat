@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth, useLogout } from '@/hooks/useAuth'
+import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderLinkButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -29,6 +30,7 @@ type AppelGroup = {
 }
 
 export default function HistoriqueAppelsPage() {
+  useScrollToTop()
   const { user, loading: authLoading } = useAuth({
     requireAuth: true,
     redirectTo: '/login',

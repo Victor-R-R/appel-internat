@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth, useLogout } from '@/hooks/useAuth'
 import { useToast } from '@/contexts/ToastContext'
+import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderLinkButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -18,6 +19,7 @@ type Recap = {
 }
 
 export default function RecapsPage() {
+  useScrollToTop()
   const router = useRouter()
   const toast = useToast()
   const { user, loading: authLoading } = useAuth({ requireAuth: true, redirectTo: '/login' })

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth, useLogout } from '@/hooks/useAuth'
+import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderActionButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -15,6 +16,7 @@ type Stats = {
 }
 
 export default function AdminDashboard() {
+  useScrollToTop()
   const { user, loading: authLoading } = useAuth({
     requireAuth: true,
     redirectTo: '/login',
