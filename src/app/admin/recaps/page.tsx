@@ -197,7 +197,7 @@ export default function RecapsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader
-        title={`${user.prenom} • Consultation des récaps`}
+        title={`${user.prenom} ${user.nom} • Consultation des récaps`}
         subtitle="📝 Récaps de la semaine"
         variant="blue"
         actions={

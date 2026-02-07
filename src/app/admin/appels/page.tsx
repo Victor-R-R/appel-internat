@@ -138,7 +138,7 @@ export default function HistoriqueAppelsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader
-        title={`${user.prenom} • Consultation des appels`}
+        title={`${user.prenom} ${user.nom} • Consultation des appels`}
         subtitle="📊 Historique des appels"
         variant="blue"
         actions={

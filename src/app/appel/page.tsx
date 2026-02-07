@@ -199,7 +199,7 @@ export default function AppelPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader
-        title={user.prenom || user.email}
+        title={`${user.prenom} ${user.nom}`}
         subtitle={`Appel - ${selectedNiveau} ${groupeLabel}`}
         variant="blue"
         actions={

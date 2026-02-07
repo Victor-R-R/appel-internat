@@ -53,7 +53,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader
-        title={`${user.prenom} • ${user.role === 'superadmin' ? 'Superadmin' : user.role === 'cpe' ? 'CPE' : user.role === 'manager' ? 'Manager' : 'AED'}`}
+        title={`${user.prenom} ${user.nom} • ${user.role === 'superadmin' ? 'Superadmin' : user.role === 'cpe' ? 'CPE' : user.role === 'manager' ? 'Manager' : 'AED'}`}
         subtitle="🔐 Gestion"
         variant="blue"
         actions={
