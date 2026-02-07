@@ -24,7 +24,7 @@ interface ActionButtonProps extends BaseButtonProps {
 // STYLES DE BASE
 // ============================================
 
-const BASE_CLASSES = 'rounded-md px-4 py-2 text-sm font-medium transition-all cursor-pointer'
+const BASE_CLASSES = 'rounded-md px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:px-4 sm:py-2 sm:text-sm'
 
 const VARIANT_STYLES: Record<ButtonVariant, string> = {
   // Boutons transparents (Retour, Déconnexion)

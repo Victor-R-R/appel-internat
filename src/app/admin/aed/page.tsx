@@ -230,19 +230,20 @@ export default function GestionAEDPage() {
 
         {/* Liste des utilisateurs */}
         <div className="overflow-hidden rounded-lg bg-white shadow">
-          <table className="min-w-full divide-y divide-gray-200">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Nom
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:table-cell">
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Rôle
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 md:table-cell">
                   Niveau / Groupe
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -258,7 +259,7 @@ export default function GestionAEDPage() {
                       {aed.prenom} {aed.nom}
                     </div>
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4">
+                  <td className="hidden whitespace-nowrap px-6 py-4 sm:table-cell">
                     <div className="text-sm text-gray-500">{aed.email}</div>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
@@ -266,7 +267,7 @@ export default function GestionAEDPage() {
                       {ROLE_LABELS[aed.role] || aed.role}
                     </Badge>
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4">
+                  <td className="hidden whitespace-nowrap px-6 py-4 md:table-cell">
                     {aed.role === 'aed' ? (
                       <Badge variant="info">
                         {aed.niveau} {aed.sexeGroupe ? (aed.sexeGroupe === 'F' ? 'Filles' : 'Garçons') : '⚠️ Non configuré'}
@@ -294,6 +295,7 @@ export default function GestionAEDPage() {
               ))}
             </tbody>
           </table>
+          </div>
 
           {aeds.length === 0 && (
             <div className="py-12 text-center">

@@ -247,7 +247,8 @@ export default function GestionElevesPage() {
 
         {/* Liste des élèves */}
         <div className="overflow-hidden rounded-lg bg-white shadow">
-          <table className="min-w-full divide-y divide-gray-200">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -256,10 +257,10 @@ export default function GestionElevesPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                   Niveau
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 sm:table-cell">
                   Sexe
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <th className="hidden px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 md:table-cell">
                   Statut
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -278,12 +279,12 @@ export default function GestionElevesPage() {
                   <td className="whitespace-nowrap px-6 py-4">
                     <Badge variant="info">{eleve.niveau}</Badge>
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4">
+                  <td className="hidden whitespace-nowrap px-6 py-4 sm:table-cell">
                     <div className="text-sm text-gray-500">
                       {eleve.sexe === 'M' ? 'Garçon' : 'Fille'}
                     </div>
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4">
+                  <td className="hidden whitespace-nowrap px-6 py-4 md:table-cell">
                     {eleve.actif ? (
                       <Badge variant="info">Actif</Badge>
                     ) : (
@@ -318,6 +319,7 @@ export default function GestionElevesPage() {
               ))}
             </tbody>
           </table>
+          </div>
 
           {elevesFiltered.length === 0 && (
             <div className="py-12 text-center">
