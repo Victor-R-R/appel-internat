@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useCRUD } from '@/hooks/useCRUD'
+import { useToast } from '@/contexts/ToastContext'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderLinkButton, HeaderActionButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -46,6 +47,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default function GestionAEDPage() {
   const router = useRouter()
+  const toast = useToast()
   const { user, loading: authLoading } = useAuth({ requireAuth: true, redirectTo: '/login' })
   const [aeds, setAEDs] = useState<AED[]>([])
 
@@ -72,7 +74,7 @@ export default function GestionAEDPage() {
 
     // Seul Superadmin peut gérer les utilisateurs
     if (user && user.role !== 'superadmin') {
-      alert('⛔ Accès réservé aux Superadmins')
+      toast.error('Accès réservé aux Superadmins')
       router.push('/admin/dashboard')
       return
     }
@@ -80,7 +82,7 @@ export default function GestionAEDPage() {
     if (user) {
       crud.reloadItems()
     }
-  }, [user, authLoading, router])
+  }, [user, authLoading, router, toast])
 
   if (authLoading || crud.loading) {
     return <LoadingSpinner />

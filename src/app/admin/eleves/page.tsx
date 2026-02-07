@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useCRUD } from '@/hooks/useCRUD'
+import { useToast } from '@/contexts/ToastContext'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderLinkButton, HeaderActionButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
@@ -36,6 +37,7 @@ const INITIAL_FORM_DATA: EleveFormData = {
 
 export default function GestionElevesPage() {
   const router = useRouter()
+  const toast = useToast()
   const { user, loading: authLoading } = useAuth({ requireAuth: true, redirectTo: '/login' })
   const [eleves, setEleves] = useState<Eleve[]>([])
   const [filterNiveau, setFilterNiveau] = useState<string>('tous')
@@ -62,7 +64,7 @@ export default function GestionElevesPage() {
 
     // Seul Superadmin peut gérer les élèves
     if (user && user.role !== 'superadmin') {
-      alert('⛔ Accès réservé aux Superadmins')
+      toast.error('Accès réservé aux Superadmins')
       router.push('/admin/dashboard')
       return
     }
@@ -70,7 +72,7 @@ export default function GestionElevesPage() {
     if (user) {
       crud.reloadItems()
     }
-  }, [user, authLoading, router])
+  }, [user, authLoading, router, toast])
 
   const handleToggleActif = async (eleve: Eleve) => {
     const action = eleve.actif ? 'archiver' : 'réactiver'
@@ -86,13 +88,13 @@ export default function GestionElevesPage() {
       const data = await response.json()
 
       if (data.success) {
-        alert(`✅ Élève ${action === 'archiver' ? 'archivé' : 'réactivé'}`)
+        toast.success(`Élève ${action === 'archiver' ? 'archivé' : 'réactivé'} avec succès`)
         await crud.reloadItems()
       } else {
-        alert('❌ Erreur : ' + data.error)
+        toast.error(data.error || 'Une erreur est survenue')
       }
     } catch (error) {
-      alert('❌ Erreur de connexion')
+      toast.error('Erreur de connexion au serveur')
     }
   }
 

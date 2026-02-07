@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useToast } from '@/contexts/ToastContext'
 
 interface UseCRUDOptions<T, F> {
   /** API path (e.g., '/api/admin/aed') */
@@ -53,6 +54,7 @@ export function useCRUD<T extends { id: number | string }, F>(
     scrollOnEdit = true,
   } = options
 
+  const toast = useToast()
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingItem, setEditingItem] = useState<T | null>(null)
@@ -68,6 +70,7 @@ export function useCRUD<T extends { id: number | string }, F>(
       }
     } catch (error) {
       console.error(`Erreur chargement ${entityName}:`, error)
+      toast.error(`Erreur lors du chargement des ${entityName.toLowerCase()}s`)
     } finally {
       setLoading(false)
     }
@@ -89,16 +92,16 @@ export function useCRUD<T extends { id: number | string }, F>(
       const data = await response.json()
 
       if (data.success) {
-        alert(editingItem ? `✅ ${entityName} modifié` : `✅ ${entityName} créé`)
+        toast.success(editingItem ? `${entityName} modifié avec succès` : `${entityName} créé avec succès`)
         setShowForm(false)
         setEditingItem(null)
         setFormData(initialFormData)
         await reloadItems()
       } else {
-        alert('❌ Erreur : ' + data.error)
+        toast.error(data.error || 'Une erreur est survenue')
       }
     } catch (error) {
-      alert('❌ Erreur de connexion')
+      toast.error('Erreur de connexion au serveur')
     }
   }
 
@@ -131,13 +134,13 @@ export function useCRUD<T extends { id: number | string }, F>(
       const data = await response.json()
 
       if (data.success) {
-        alert(`✅ ${entityName} supprimé`)
+        toast.success(`${entityName} supprimé avec succès`)
         await reloadItems()
       } else {
-        alert('❌ Erreur : ' + data.error)
+        toast.error(data.error || 'Erreur lors de la suppression')
       }
     } catch (error) {
-      alert('❌ Erreur de connexion')
+      toast.error('Erreur de connexion au serveur')
     }
   }
 

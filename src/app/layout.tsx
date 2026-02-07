@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Lato, Roboto } from "next/font/google";
+import { ToastProvider } from "@/contexts/ToastContext";
 import "./globals.css";
 
 const lato = Lato({
@@ -29,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${lato.variable} ${roboto.variable} antialiased`}
       >
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );
