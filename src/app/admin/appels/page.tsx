@@ -16,14 +16,15 @@ type AED = AedSlim
 type AppelItem = {
   id: string
   statut: 'present' | 'acf' | 'absent'
-  observation: string | null
   eleve: Eleve
 }
 
 type AppelGroup = {
   niveau: string
   date: Date
+  sexeGroupe: string
   aed: AED
+  observation?: string | null
   appels: AppelItem[]
 }
 
@@ -258,7 +259,7 @@ export default function HistoriqueAppelsPage() {
                       <div>
                         <h3 className="text-lg font-bold">
                           📚 {group.niveau} •{' '}
-                          {group.aed.sexeGroupe === 'F' ? 'Filles' : 'Garçons'}
+                          {group.sexeGroupe === 'F' ? 'Filles' : 'Garçons'}
                         </h3>
                         <p className="mt-1 text-sm opacity-90">
                           📅 {formatDate(group.date)} • Par {group.aed.prenom} {group.aed.nom}
@@ -276,6 +277,18 @@ export default function HistoriqueAppelsPage() {
                         </span>
                       </div>
                     </div>
+
+                    {/* Observation du groupe */}
+                    {group.observation && (
+                      <div className="mt-3 rounded-md bg-white/10 px-4 py-3 backdrop-blur-sm">
+                        <p className="text-sm font-medium opacity-90">
+                          📝 Observations du groupe :
+                        </p>
+                        <p className="mt-1 text-sm italic">
+                          &ldquo;{group.observation}&rdquo;
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Liste des appels */}
@@ -309,15 +322,6 @@ export default function HistoriqueAppelsPage() {
                             )}
                           </div>
                         </div>
-
-                        {/* Observation si présente */}
-                        {appel.observation && (
-                          <div className="mt-2 max-w-md">
-                            <p className="text-sm italic text-gray-600">
-                              &ldquo;{appel.observation}&rdquo;
-                            </p>
-                          </div>
-                        )}
                       </div>
                     ))}
                   </div>

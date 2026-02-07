@@ -50,5 +50,4 @@ export type AedSlim = {
 export type AppelData = {
   eleveId: string;
   statut: Statut;
-  observation: string;
 };

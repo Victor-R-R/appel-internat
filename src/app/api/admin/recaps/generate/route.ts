@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Génération récap] Date: ${targetDate.toISOString()}`)
 
-    // Récupérer tous les appels de cette date avec observations
-    const appels = await prisma.appel.findMany({
+    // Récupérer toutes les observations de groupe pour cette date
+    const observationsGroupes = await prisma.observationGroupe.findMany({
       where: {
         date: targetDate,
         AND: [
@@ -38,37 +38,25 @@ export async function POST(request: NextRequest) {
           { observation: { not: '' } },
         ],
       },
-      include: {
-        eleve: {
-          select: {
-            nom: true,
-            prenom: true,
-            sexe: true,
-          },
-        },
-      },
       orderBy: [
         { niveau: 'asc' },
-        { eleve: { nom: 'asc' } },
+        { sexeGroupe: 'asc' },
       ],
     })
 
-    if (appels.length === 0) {
+    if (observationsGroupes.length === 0) {
       console.log('[Génération récap] Aucune observation trouvée')
       return apiError('Aucune observation trouvée pour cette date', 404)
     }
 
-    console.log(`[Génération récap] ${appels.length} observation(s) trouvée(s)`)
+    console.log(`[Génération récap] ${observationsGroupes.length} observation(s) de groupe trouvée(s)`)
 
-    // Filtrer et formater les observations pour l'IA
-    const observationsFormatted = appels
-      .filter((a) => a.observation && a.observation.trim() !== '')
-      .map((a) => ({
-        niveau: a.niveau,
-        eleve: a.eleve,
-        statut: a.statut,
-        observation: a.observation!,
-      }))
+    // Formater les observations pour l'IA
+    const observationsFormatted = observationsGroupes.map((obs) => ({
+      niveau: obs.niveau,
+      sexeGroupe: obs.sexeGroupe,
+      observation: obs.observation!,
+    }))
 
     // Générer le contenu avec IA
     const contenu = await genererRecapAvecIA(observationsFormatted, targetDate)
@@ -103,7 +91,7 @@ export async function POST(request: NextRequest) {
         date: recap.date,
         createdAt: recap.createdAt,
       },
-      observationsCount: appels.length,
+      observationsCount: observationsGroupes.length,
     })
   } catch (error) {
     // FIX BUG ERROR LEAK : ne jamais exposer error.message au client

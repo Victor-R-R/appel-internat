@@ -51,21 +51,39 @@ export async function GET(request: NextRequest) {
       ],
     })
 
-    // Grouper les appels par niveau et date
+    // Récupérer les observations de groupe pour les dates concernées
+    const dates = [...new Set(appels.map(a => a.date.toISOString().split('T')[0]))]
+    const observationsGroupes = await prisma.observationGroupe.findMany({
+      where: {
+        date: {
+          in: dates.map(d => new Date(d)),
+        },
+      },
+    })
+
+    // Créer un index des observations par clé
+    const obsIndex = observationsGroupes.reduce((acc, obs) => {
+      const key = `${obs.niveau}_${obs.date.toISOString().split('T')[0]}_${obs.sexeGroupe}`
+      acc[key] = obs.observation
+      return acc
+    }, {} as Record<string, string | null>)
+
+    // Grouper les appels par niveau, date ET sexe
     const grouped = appels.reduce((acc, appel) => {
-      const key = `${appel.niveau}_${appel.date.toISOString().split('T')[0]}`
+      const key = `${appel.niveau}_${appel.date.toISOString().split('T')[0]}_${appel.eleve.sexe}`
       if (!acc[key]) {
         acc[key] = {
           niveau: appel.niveau,
           date: appel.date,
+          sexeGroupe: appel.eleve.sexe,
           appels: [],
           aed: appel.aed, // Premier AED trouvé pour ce groupe
+          observation: obsIndex[key] || null, // Observation du groupe
         }
       }
       acc[key].appels.push({
         id: appel.id,
         statut: appel.statut,
-        observation: appel.observation,
         eleve: appel.eleve,
       })
       return acc

@@ -61,34 +61,6 @@ export async function findWithFilters(filters: {
   })
 }
 
-/**
- * Trouve les appels avec observations pour une date
- * Utilisé pour la génération de récaps
- */
-export async function findWithObservations(date: Date) {
-  return prisma.appel.findMany({
-    where: {
-      date,
-      AND: [
-        { observation: { not: null } },
-        { observation: { not: '' } },
-      ],
-    },
-    include: {
-      eleve: {
-        select: {
-          nom: true,
-          prenom: true,
-          sexe: true,
-        },
-      },
-    },
-    orderBy: [
-      { niveau: 'asc' },
-      { eleve: { nom: 'asc' } },
-    ],
-  })
-}
 
 /**
  * Remplace tous les appels d'un niveau pour une date
@@ -101,7 +73,6 @@ export async function replaceForNiveauAndDate(
     eleveId: string
     aedId: string
     statut: Statut
-    observation?: string | null
   }>
 ) {
   // Transaction : supprimer les anciens appels puis créer les nouveaux
@@ -121,6 +92,73 @@ export async function replaceForNiveauAndDate(
     })
 
     return created
+  })
+}
+
+/**
+ * Upsert une observation de groupe
+ * Utilisé pour sauvegarder l'observation d'un groupe (niveau + sexeGroupe) pour une date
+ */
+export async function upsertObservationGroupe(data: {
+  date: Date
+  niveau: Niveau
+  sexeGroupe: Sexe
+  observation: string
+  aedId: string
+}) {
+  return prisma.observationGroupe.upsert({
+    where: {
+      date_niveau_sexeGroupe: {
+        date: data.date,
+        niveau: data.niveau,
+        sexeGroupe: data.sexeGroupe,
+      },
+    },
+    update: {
+      observation: data.observation,
+      aedId: data.aedId,
+    },
+    create: data,
+  })
+}
+
+/**
+ * Trouve l'observation d'un groupe pour une date
+ * Utilisé pour charger l'observation existante lors de l'affichage de l'appel
+ */
+export async function findObservationGroupe(
+  date: Date,
+  niveau: Niveau,
+  sexeGroupe: Sexe
+) {
+  return prisma.observationGroupe.findUnique({
+    where: {
+      date_niveau_sexeGroupe: {
+        date,
+        niveau,
+        sexeGroupe,
+      },
+    },
+  })
+}
+
+/**
+ * Trouve toutes les observations de groupe pour une date
+ * Utilisé pour la génération de récaps
+ */
+export async function findGroupObservationsForDate(date: Date) {
+  return prisma.observationGroupe.findMany({
+    where: {
+      date,
+      AND: [
+        { observation: { not: null } },
+        { observation: { not: '' } },
+      ],
+    },
+    orderBy: [
+      { niveau: 'asc' },
+      { sexeGroupe: 'asc' },
+    ],
   })
 }
 
