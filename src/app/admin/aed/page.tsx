@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useCRUD } from '@/hooks/useCRUD'
 import { AdminHeader } from '@/components/ui/AdminHeader'
+import { HeaderLinkButton, HeaderActionButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Badge } from '@/components/ui/Badge'
 import { NiveauSelect } from '@/components/forms/NiveauSelect'
@@ -94,13 +95,14 @@ export default function GestionAEDPage() {
         subtitle={`${aeds.length} utilisateur${aeds.length > 1 ? 's' : ''} enregistré${aeds.length > 1 ? 's' : ''}`}
         variant="blue"
         actions={
-          <button
-            onClick={crud.handleCreate}
-            className="rounded-md bg-white px-4 py-2 text-sm font-semibold hover:bg-white/90 transition-all cursor-pointer"
-            style={{ color: '#0C71C3' }}
-          >
-            + Ajouter un utilisateur
-          </button>
+          <>
+            <HeaderLinkButton href="/admin/dashboard">
+              Retour
+            </HeaderLinkButton>
+            <HeaderActionButton onClick={crud.handleCreate} variant="primary-blue">
+              + Ajouter un utilisateur
+            </HeaderActionButton>
+          </>
         }
       />
 

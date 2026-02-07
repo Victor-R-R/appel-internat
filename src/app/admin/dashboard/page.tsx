@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth, useLogout } from '@/hooks/useAuth'
 import { AdminHeader } from '@/components/ui/AdminHeader'
+import { HeaderActionButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 
 type Stats = {
@@ -52,17 +53,13 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader
-        title="🔐 Administration"
-        subtitle={`${user.email} • ${user.role === 'superadmin' ? 'Superadmin' : user.role === 'cpe' ? 'CPE' : user.role === 'manager' ? 'Manager' : 'AED'} • Internat d'Excellence de Sourdun`}
+        title={`${user.prenom} • ${user.role === 'superadmin' ? 'Superadmin' : user.role === 'cpe' ? 'CPE' : user.role === 'manager' ? 'Manager' : 'AED'}`}
+        subtitle="🔐 Gestion"
         variant="blue"
-        showBackLink={false}
         actions={
-          <button
-            onClick={logout}
-            className="btn-primary rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all cursor-pointer"
-          >
+          <HeaderActionButton onClick={logout}>
             Déconnexion
-          </button>
+          </HeaderActionButton>
         }
       />
 
@@ -70,7 +67,7 @@ export default function AdminDashboard() {
         {/* Statistiques */}
         <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
           <StatCard
-            title="Utilisateurs"
+            title="AED"
             value={stats?.totalAED || 0}
             icon="👥"
             color="bg-[#0C71C3]"

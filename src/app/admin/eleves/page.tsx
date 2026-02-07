@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useCRUD } from '@/hooks/useCRUD'
 import { AdminHeader } from '@/components/ui/AdminHeader'
+import { HeaderLinkButton, HeaderActionButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Badge } from '@/components/ui/Badge'
 import { NiveauSelect } from '@/components/forms/NiveauSelect'
@@ -115,15 +116,16 @@ export default function GestionElevesPage() {
       <AdminHeader
         title="🎓 Gestion des élèves"
         subtitle={`${eleves.filter((e) => e.actif).length} actifs • ${eleves.filter((e) => !e.actif).length} archivés`}
-        variant="turquoise"
+        variant="blue"
         actions={
-          <button
-            onClick={crud.handleCreate}
-            className="rounded-md bg-white px-4 py-2 text-sm font-semibold hover:bg-white/90 transition-all cursor-pointer"
-            style={{ color: '#7EBEC5' }}
-          >
-            + Ajouter un élève
-          </button>
+          <>
+            <HeaderLinkButton href="/admin/dashboard">
+              Retour
+            </HeaderLinkButton>
+            <HeaderActionButton onClick={crud.handleCreate} variant="primary-blue">
+              + Ajouter un élève
+            </HeaderActionButton>
+          </>
         }
       />
 
