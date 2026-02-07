@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth, useLogout } from '@/hooks/useAuth'
 import { AdminHeader } from '@/components/ui/AdminHeader'
+import { HeaderLinkButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ADMIN_ROLES } from '@/lib/constants'
 import { formatDateForAPI } from '@/lib/format'
@@ -18,6 +19,7 @@ type Recap = {
 export default function RecapsPage() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth({ requireAuth: true, redirectTo: '/login' })
+  const logout = useLogout()
   const [recaps, setRecaps] = useState<Recap[]>([])
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [currentRecap, setCurrentRecap] = useState<Recap | null>(null)
@@ -195,9 +197,14 @@ export default function RecapsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader
-        title="📝 Récaps de la semaine"
-        subtitle={`${user.email} • Consultation des récaps • Internat d'Excellence de Sourdun`}
-        variant="blue-reverse"
+        title={`${user.prenom} • Consultation des récaps`}
+        subtitle="📝 Récaps de la semaine"
+        variant="blue"
+        actions={
+          <HeaderLinkButton href="/admin/dashboard">
+            Retour
+          </HeaderLinkButton>
+        }
       />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

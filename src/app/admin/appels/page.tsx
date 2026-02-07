@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { useAuth, useLogout } from '@/hooks/useAuth'
 import { AdminHeader } from '@/components/ui/AdminHeader'
+import { HeaderLinkButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Badge } from '@/components/ui/Badge'
 import { NiveauSelect } from '@/components/forms/NiveauSelect'
@@ -138,24 +138,13 @@ export default function HistoriqueAppelsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader
-        title="📊 Historique des appels"
-        subtitle={`${user.email} • Consultation des appels • Internat d'Excellence de Sourdun`}
+        title={`${user.prenom} • Consultation des appels`}
+        subtitle="📊 Historique des appels"
         variant="blue"
         actions={
-          <>
-            <Link
-              href="/admin/dashboard"
-              className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all"
-            >
-              ← Retour
-            </Link>
-            <button
-              onClick={logout}
-              className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all cursor-pointer"
-            >
-              Déconnexion
-            </button>
-          </>
+          <HeaderLinkButton href="/admin/dashboard">
+            Retour
+          </HeaderLinkButton>
         }
       />
 

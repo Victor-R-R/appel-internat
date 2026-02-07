@@ -1,9 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth, useLogout } from '@/hooks/useAuth'
 import { AdminHeader } from '@/components/ui/AdminHeader'
+import { HeaderActionButton } from '@/components/ui/HeaderButton'
+import { AppelStats } from '@/components/ui/AppelStats'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { NiveauSelect } from '@/components/forms/NiveauSelect'
 import type { EleveDTO, AppelData } from '@/lib/types'
@@ -53,6 +55,19 @@ export default function AppelPage() {
   }, [user])
 
   /**
+   * Calcul dynamique des statistiques
+   */
+  const stats = useMemo(() => {
+    // Filtrer les appels pour ne compter que ceux des élèves actuels
+    const eleveIds = new Set(eleves.map((e) => e.id))
+    const appelValues = Object.values(appels).filter((a) => eleveIds.has(a.eleveId))
+    return {
+      total: eleves.length,
+      presents: appelValues.filter((a) => a.statut === 'present').length,
+    }
+  }, [appels, eleves])
+
+  /**
    * Charger les élèves quand niveau ou groupe change
    */
   useEffect(() => {
@@ -66,6 +81,9 @@ export default function AppelPage() {
    */
   const loadEleves = async (niveau: string, sexeGroupe: string) => {
     try {
+      // Réinitialiser les appels pour éviter la race condition
+      setAppels({})
+
       // Charger les élèves
       const elevesResponse = await fetch(`/api/eleves?niveau=${niveau}&sexe=${sexeGroupe}`)
       const elevesData = await elevesResponse.json()
@@ -127,7 +145,7 @@ export default function AppelPage() {
   const updateStatut = (eleveId: string, statut: 'present' | 'acf' | 'absent') => {
     setAppels((prev) => ({
       ...prev,
-      [eleveId]: { ...prev[eleveId], statut },
+      [eleveId]: { eleveId, statut },
     }))
   }
 
@@ -181,10 +199,9 @@ export default function AppelPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader
-        title={`Appel - ${selectedNiveau} ${groupeLabel}`}
-        subtitle={`${user.prenom} ${user.nom} • ${eleves.length} élèves • Internat d'Excellence de Sourdun`}
+        title={user.prenom || user.email}
+        subtitle={`Appel - ${selectedNiveau} ${groupeLabel}`}
         variant="blue"
-        showBackLink={false}
         actions={
           <>
             {appelExists && (
@@ -192,12 +209,9 @@ export default function AppelPage() {
                 ✓ Appel déjà effectué aujourd&apos;hui - Vous pouvez le modifier jusqu&apos;à minuit
               </p>
             )}
-            <button
-              onClick={logout}
-              className="rounded-md bg-white/20 px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-all cursor-pointer"
-            >
+            <HeaderActionButton onClick={logout}>
               Déconnexion
-            </button>
+            </HeaderActionButton>
           </>
         }
       />
@@ -232,6 +246,11 @@ export default function AppelPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Statistiques */}
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <AppelStats total={stats.total} presents={stats.presents} />
       </div>
 
       {/* Liste des élèves */}
