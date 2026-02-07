@@ -82,11 +82,6 @@ export const appelIndividuelSchema = z.object({
   statut: z.enum(statutsValides, {
     message: 'Statut doit être present, acf ou absent',
   }),
-  observation: z
-    .string()
-    .max(500, "L'observation ne peut pas dépasser 500 caractères")
-    .optional()
-    .nullable(),
 })
 
 // Validation d'une sauvegarde d'appel complète
@@ -95,6 +90,14 @@ export const appelCompletSchema = z.object({
   niveau: z.enum(niveauxValides, {
     message: 'Niveau invalide',
   }),
+  sexeGroupe: z.enum(['M', 'F'], {
+    message: 'Sexe du groupe doit être M ou F',
+  }),
+  observation: z
+    .string()
+    .max(500, "L'observation ne peut pas dépasser 500 caractères")
+    .optional()
+    .nullable(),
   appels: z
     .array(appelIndividuelSchema)
     .min(1, 'Au moins un appel est requis')

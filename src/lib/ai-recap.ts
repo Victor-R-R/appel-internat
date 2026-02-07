@@ -14,12 +14,7 @@ const anthropic = process.env.ANTHROPIC_API_KEY
 
 type ObservationData = {
   niveau: string
-  eleve: {
-    nom: string
-    prenom: string
-    sexe: string
-  }
-  statut: string
+  sexeGroupe: string
   observation: string
 }
 
@@ -83,33 +78,32 @@ function construirePrompt(observations: ObservationData[], date: Date): string {
   niveaux.forEach((niveau) => {
     const obs = observationsParNiveau[niveau]
     if (obs && obs.length > 0) {
-      observationsTexte += `\n## ${niveau.toUpperCase()} (${obs.length} observation(s))\n`
+      observationsTexte += `\n## ${niveau.toUpperCase()} (${obs.length} groupe(s))\n`
       obs.forEach((o) => {
-        const nom = `${o.eleve.prenom} ${o.eleve.nom}`
-        const statutEmoji = o.statut === 'absent' ? '🔴' : o.statut === 'acf' ? '🟠' : '🟢'
-        observationsTexte += `${statutEmoji} ${nom} (${o.statut}): ${o.observation}\n`
+        const groupeLabel = o.sexeGroupe === 'M' ? 'Garçons' : 'Filles'
+        observationsTexte += `🔹 ${groupeLabel}: ${o.observation}\n`
       })
     }
   })
 
   return `Tu es un assistant de vie scolaire dans un internat. Tu dois générer un récapitulatif professionnel et concis des observations de la nuit du ${dateStr}.
 
-Voici toutes les observations par niveau :
+Voici toutes les observations par niveau et par groupe (garçons/filles) :
 ${observationsTexte}
 
 Génère un récapitulatif structuré qui :
 1. Commence par un résumé général (1-2 phrases max)
 2. Organise ensuite par niveau (6ème, 5ème, 4ème, 3ème, 2nde, 1ère, Terminale)
-3. Pour chaque niveau, résume les points importants de manière concise
-4. Utilise des emojis pour la lisibilité : 🔴 Absents, 🟠 ACF, 🟢 Présents avec remarques
+3. Pour chaque niveau, résume les observations des groupes (garçons et filles) de manière concise
+4. Utilise des emojis pour la lisibilité
 5. Mets en avant les situations nécessitant une attention particulière
 
 Format attendu :
 📊 Récapitulatif - [résumé global en 1-2 phrases]
 
 [Pour chaque niveau avec observations :]
-🎓 [NIVEAU] ([X] observation(s))
-[Résumé concis des points clés]
+🎓 [NIVEAU] ([X] groupe(s))
+[Résumé concis des points clés pour chaque groupe]
 
 ⚠️ Points d'attention : [s'il y en a]
 
@@ -193,7 +187,7 @@ function genererRecapBasique(observations: ObservationData[], date: Date): strin
   })
 
   const totalObs = Object.values(observationsParNiveau).reduce((sum, obs) => sum + obs.length, 0)
-  sections.push(`📊 Récapitulatif de la nuit du ${dateStr} - ${totalObs} observation(s)\n`)
+  sections.push(`📊 Récapitulatif de la nuit du ${dateStr} - ${totalObs} groupe(s)\n`)
 
   const niveaux = NIVEAUX
 
@@ -201,40 +195,13 @@ function genererRecapBasique(observations: ObservationData[], date: Date): strin
     const obs = observationsParNiveau[niveau]
     if (!obs || obs.length === 0) return
 
-    sections.push(`\n🎓 ${niveau.toUpperCase()} (${obs.length} observation(s))`)
-
-    const parStatut: Record<string, ObservationData[]> = {
-      absent: [],
-      acf: [],
-      present: [],
-    }
+    sections.push(`\n🎓 ${niveau.toUpperCase()} (${obs.length} groupe(s))`)
 
     obs.forEach((o) => {
-      if (parStatut[o.statut]) {
-        parStatut[o.statut].push(o)
-      }
+      const groupeLabel = o.sexeGroupe === 'M' ? '🔵 Garçons' : '🟣 Filles'
+      sections.push(`  ${groupeLabel}:`)
+      sections.push(`    ${o.observation}`)
     })
-
-    if (parStatut.absent.length > 0) {
-      sections.push(`  🔴 Absents (${parStatut.absent.length})`)
-      parStatut.absent.forEach((o) => {
-        sections.push(`    • ${o.eleve.prenom} ${o.eleve.nom}: ${o.observation}`)
-      })
-    }
-
-    if (parStatut.acf.length > 0) {
-      sections.push(`  🟠 ACF (${parStatut.acf.length})`)
-      parStatut.acf.forEach((o) => {
-        sections.push(`    • ${o.eleve.prenom} ${o.eleve.nom}: ${o.observation}`)
-      })
-    }
-
-    if (parStatut.present.length > 0) {
-      sections.push(`  🟢 Présents - Remarques (${parStatut.present.length})`)
-      parStatut.present.forEach((o) => {
-        sections.push(`    • ${o.eleve.prenom} ${o.eleve.nom}: ${o.observation}`)
-      })
-    }
   })
 
   return sections.join('\n')

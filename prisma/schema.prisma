@@ -23,6 +23,7 @@ model User {
   createdAt  DateTime @default(now())
 
   appels Appel[] // Relation : 1 utilisateur fait plusieurs appels
+  observationsGroupes ObservationGroupe[] // Relation : 1 utilisateur fait plusieurs observations de groupe
 }
 
 // Élèves de l'internat
@@ -44,7 +45,7 @@ model Appel {
   date        DateTime @default(now())
   niveau      String // Copié depuis eleve.niveau pour faciliter les filtres
   statut      String // "present", "acf", "absent"
-  observation String? // Texte libre pour les remarques de la nuit
+  observation String? // Texte libre pour les remarques de la nuit (HISTORIQUE - plus utilisé pour nouveau flux)
 
   eleveId String
   eleve   Eleve  @relation(fields: [eleveId], references: [id], onDelete: Cascade)
@@ -55,6 +56,24 @@ model Appel {
   @@unique([eleveId, date]) // 1 élève = 1 seul appel par jour
   @@index([date]) // Index pour requêtes rapides par date
   @@index([niveau]) // Index pour filtrer par niveau
+}
+
+// Observations par groupe (niveau + sexe) pour l'appel du soir
+model ObservationGroupe {
+  id         String   @id @default(uuid())
+  date       DateTime // Date de l'appel
+  niveau     String // "6eme", "5eme", etc.
+  sexeGroupe String // "M" ou "F"
+  observation String? // Observation du groupe pour cette nuit
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  aedId String
+  aed   User   @relation(fields: [aedId], references: [id])
+
+  @@unique([date, niveau, sexeGroupe]) // 1 seule observation par groupe par jour
+  @@index([date])
+  @@index([niveau])
 }
 
 // Récapitulatifs générés par LLM

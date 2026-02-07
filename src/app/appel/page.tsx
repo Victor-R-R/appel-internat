@@ -22,6 +22,7 @@ export default function AppelPage() {
   // State
   const [eleves, setEleves] = useState<EleveDTO[]>([])
   const [appels, setAppels] = useState<Record<string, AppelData>>({})
+  const [groupObservation, setGroupObservation] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [appelExists, setAppelExists] = useState(false)
@@ -78,7 +79,7 @@ export default function AppelPage() {
 
       // Charger l'appel existant du jour
       const today = new Date().toISOString().split('T')[0]
-      const appelResponse = await fetch(`/api/appel?niveau=${niveau}&date=${today}`)
+      const appelResponse = await fetch(`/api/appel?niveau=${niveau}&date=${today}&sexeGroupe=${sexeGroupe}`)
       const appelData = await appelResponse.json()
 
       // Si un appel existe déjà aujourd'hui
@@ -91,10 +92,12 @@ export default function AppelPage() {
           existingAppels[appel.eleveId] = {
             eleveId: appel.eleveId,
             statut: appel.statut,
-            observation: appel.observation || '',
           }
         })
         setAppels(existingAppels)
+
+        // Charger l'observation du groupe
+        setGroupObservation(appelData.observation || '')
       } else {
         // Pas d'appel existant : initialiser à "present" par défaut
         setAppelExists(false)
@@ -104,10 +107,12 @@ export default function AppelPage() {
           initialAppels[eleve.id] = {
             eleveId: eleve.id,
             statut: 'present',
-            observation: '',
           }
         })
         setAppels(initialAppels)
+
+        // Charger l'observation du groupe (peut exister même si pas d'appels)
+        setGroupObservation(appelData.observation || '')
       }
     } catch (error) {
       console.error('Erreur chargement données:', error)
@@ -126,15 +131,6 @@ export default function AppelPage() {
     }))
   }
 
-  /**
-   * Changer l'observation d'un élève
-   */
-  const updateObservation = (eleveId: string, observation: string) => {
-    setAppels((prev) => ({
-      ...prev,
-      [eleveId]: { ...prev[eleveId], observation },
-    }))
-  }
 
   /**
    * Sauvegarder l'appel complet
@@ -149,7 +145,9 @@ export default function AppelPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           aedId: user.id,
-          niveau: selectedNiveau, // Utilise le niveau sélectionné
+          niveau: selectedNiveau,
+          sexeGroupe: selectedSexeGroupe,
+          observation: groupObservation,
           appels: Object.values(appels),
         }),
       })
@@ -290,19 +288,25 @@ export default function AppelPage() {
                 </button>
               </div>
 
-              {/* Zone observation */}
-              <textarea
-                value={appels[eleve.id]?.observation || ''}
-                onChange={(e) => updateObservation(eleve.id, e.target.value)}
-                placeholder="Observations (facultatif)..."
-                className="w-full rounded-md border px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors"
-                style={{ borderColor: '#e2e5ed' }}
-                onFocus={(e) => e.currentTarget.style.borderColor = '#0C71C3'}
-                onBlur={(e) => e.currentTarget.style.borderColor = '#e2e5ed'}
-                rows={2}
-              />
             </div>
           ))}
+        </div>
+
+        {/* Observation du groupe */}
+        <div className="mt-8 rounded-lg bg-white p-6 shadow">
+          <h3 className="mb-4 text-lg font-semibold text-gray-900">
+            📝 Observations du groupe {selectedNiveau} {groupeLabel}
+          </h3>
+          <textarea
+            value={groupObservation}
+            onChange={(e) => setGroupObservation(e.target.value)}
+            placeholder="Observations générales sur le groupe (facultatif)..."
+            className="w-full rounded-md border px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors"
+            style={{ borderColor: '#e2e5ed' }}
+            onFocus={(e) => e.currentTarget.style.borderColor = '#0C71C3'}
+            onBlur={(e) => e.currentTarget.style.borderColor = '#e2e5ed'}
+            rows={4}
+          />
         </div>
 
         {/* Bouton sauvegarder */}
