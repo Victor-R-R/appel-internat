@@ -103,7 +103,7 @@ export default function GestionAEDPage() {
             <HeaderLinkButton href="/admin/dashboard">
               Retour
             </HeaderLinkButton>
-            <HeaderActionButton onClick={crud.handleCreate} variant="primary-blue">
+            <HeaderActionButton onClick={crud.handleCreate} variant="primary">
               + Ajouter un utilisateur
             </HeaderActionButton>
           </>
