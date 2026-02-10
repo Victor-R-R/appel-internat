@@ -201,7 +201,10 @@ export default function AppelPage() {
   const groupeLabel = selectedSexeGroupe === 'F' ? 'Filles' : 'Garçons'
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: 'var(--surface-base)' }}
+    >
       <AdminHeader
         title={`${user.prenom} ${user.nom}`}
         subtitle={`Appel - ${selectedNiveau} ${groupeLabel}`}
@@ -209,8 +212,14 @@ export default function AppelPage() {
         actions={
           <>
             {appelExists && (
-              <p className="rounded-md bg-white/20 px-3 py-1 text-xs font-medium text-white">
-                ✓ Appel déjà effectué aujourd&apos;hui - Vous pouvez le modifier jusqu&apos;à minuit
+              <p
+                className="rounded-md px-3 py-1 text-xs font-medium"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  color: 'var(--text-inverse)',
+                }}
+              >
+                ✓ Appel déjà effectué aujourd&apos;hui
               </p>
             )}
             <HeaderActionButton onClick={logout}>
@@ -221,31 +230,41 @@ export default function AppelPage() {
       />
 
       {/* Sélecteurs de niveau et groupe */}
-      <div className="shadow-lg" style={{ background: 'linear-gradient(to right, #0C71C3, #4d8dc1)' }}>
+      <div
+        style={{
+          backgroundColor: 'var(--surface-card)',
+          borderBottom: '1px solid var(--border-standard)',
+        }}
+      >
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="mb-2 block text-sm font-medium text-white">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                className="mb-2 block text-sm font-medium"
+                style={{ color: 'var(--text-secondary)' }}
+              >
                 🎓 Niveau
               </label>
               <NiveauSelect
                 value={selectedNiveau}
                 onChange={setSelectedNiveau}
-                className="w-full rounded-md border border-white/20 bg-white/10 px-4 py-2 text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white backdrop-blur-sm"
+                className="input-admin"
               />
             </div>
-            <div className="flex-1">
-              <label className="mb-2 block text-sm font-medium text-white">
+            <div>
+              <label
+                className="mb-2 block text-sm font-medium"
+                style={{ color: 'var(--text-secondary)' }}
+              >
                 👥 Groupe
               </label>
               <select
                 value={selectedSexeGroupe}
                 onChange={(e) => setSelectedSexeGroupe(e.target.value)}
-                className="w-full rounded-md border border-white/20 bg-white/10 px-4 py-2 text-white focus:border-white focus:outline-none focus:ring-1 focus:ring-white backdrop-blur-sm"
-                style={{ color: 'white' }}
+                className="input-admin"
               >
-                <option value="F" style={{ color: '#333' }}>👧 Filles</option>
-                <option value="M" style={{ color: '#333' }}>👦 Garçons</option>
+                <option value="F">👧 Filles</option>
+                <option value="M">👦 Garçons</option>
               </select>
             </div>
           </div>
@@ -257,91 +276,140 @@ export default function AppelPage() {
         <AppelStats total={stats.total} presents={stats.presents} />
       </div>
 
-      {/* Liste des élèves */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="space-y-4">
-          {eleves.map((eleve) => (
+      {/* Registre des élèves */}
+      <main className="mx-auto max-w-7xl px-4 pb-8 sm:px-6 lg:px-8">
+        <div
+          className="overflow-hidden"
+          style={{
+            backgroundColor: 'var(--surface-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-md)',
+          }}
+        >
+          {eleves.map((eleve, index) => (
             <div
               key={eleve.id}
-              className="rounded-lg bg-white p-6 shadow"
+              className="p-4"
+              style={{
+                borderBottom: index < eleves.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+              }}
             >
               {/* Nom de l'élève */}
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {eleve.nom} {eleve.prenom}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {eleve.sexe === 'M' ? 'Garçon' : 'Fille'}
-                  </p>
-                </div>
+              <div className="mb-3">
+                <h3
+                  className="text-base font-semibold"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {eleve.nom} {eleve.prenom}
+                </h3>
+                <p
+                  className="text-xs"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
+                  {eleve.sexe === 'M' ? 'Garçon' : 'Fille'}
+                </p>
               </div>
 
               {/* Boutons statut */}
-              <div className="mb-4 flex gap-2">
+              <div className="flex gap-2">
                 <button
                   onClick={() => updateStatut(eleve.id, 'present')}
-                  className="rounded-md px-4 py-2 text-sm font-medium transition-all cursor-pointer"
+                  className="px-4 py-2 text-sm font-medium transition-all cursor-pointer"
                   style={{
-                    backgroundColor: appels[eleve.id]?.statut === 'present' ? '#7EBEC5' : '#e2e5ed',
-                    color: appels[eleve.id]?.statut === 'present' ? 'white' : '#333333'
+                    backgroundColor:
+                      appels[eleve.id]?.statut === 'present'
+                        ? 'var(--success)'
+                        : 'var(--control-bg)',
+                    color:
+                      appels[eleve.id]?.statut === 'present'
+                        ? 'var(--text-inverse)'
+                        : 'var(--text-primary)',
+                    border:
+                      appels[eleve.id]?.statut === 'present'
+                        ? '1px solid var(--success)'
+                        : '1px solid var(--border-standard)',
+                    borderRadius: 'var(--radius-sm)',
                   }}
                 >
                   ✓ Présent
                 </button>
                 <button
                   onClick={() => updateStatut(eleve.id, 'acf')}
-                  className="rounded-md px-4 py-2 text-sm font-medium transition-all cursor-pointer"
+                  className="px-4 py-2 text-sm font-medium transition-all cursor-pointer"
                   style={{
-                    backgroundColor: appels[eleve.id]?.statut === 'acf' ? '#4d8dc1' : '#e2e5ed',
-                    color: appels[eleve.id]?.statut === 'acf' ? 'white' : '#333333'
+                    backgroundColor:
+                      appels[eleve.id]?.statut === 'acf'
+                        ? 'var(--warning)'
+                        : 'var(--control-bg)',
+                    color:
+                      appels[eleve.id]?.statut === 'acf'
+                        ? 'var(--text-inverse)'
+                        : 'var(--text-primary)',
+                    border:
+                      appels[eleve.id]?.statut === 'acf'
+                        ? '1px solid var(--warning)'
+                        : '1px solid var(--border-standard)',
+                    borderRadius: 'var(--radius-sm)',
                   }}
                 >
                   ACF
                 </button>
                 <button
                   onClick={() => updateStatut(eleve.id, 'absent')}
-                  className="rounded-md px-4 py-2 text-sm font-medium transition-all cursor-pointer"
+                  className="px-4 py-2 text-sm font-medium transition-all cursor-pointer"
                   style={{
-                    backgroundColor: appels[eleve.id]?.statut === 'absent' ? '#dc2626' : '#e2e5ed',
-                    color: appels[eleve.id]?.statut === 'absent' ? 'white' : '#333333'
+                    backgroundColor:
+                      appels[eleve.id]?.statut === 'absent'
+                        ? 'var(--error)'
+                        : 'var(--control-bg)',
+                    color:
+                      appels[eleve.id]?.statut === 'absent'
+                        ? 'var(--text-inverse)'
+                        : 'var(--text-primary)',
+                    border:
+                      appels[eleve.id]?.statut === 'absent'
+                        ? '1px solid var(--error)'
+                        : '1px solid var(--border-standard)',
+                    borderRadius: 'var(--radius-sm)',
                   }}
                 >
                   ✗ Absent
                 </button>
               </div>
-
             </div>
           ))}
         </div>
 
         {/* Observation du groupe */}
-        <div className="mt-8 rounded-lg bg-white p-6 shadow">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">
+        <div
+          className="mt-6 p-6"
+          style={{
+            backgroundColor: 'var(--surface-card)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-md)',
+          }}
+        >
+          <h3
+            className="mb-4 text-base font-semibold"
+            style={{ color: 'var(--text-primary)' }}
+          >
             📝 Observations du groupe {selectedNiveau} {groupeLabel}
           </h3>
           <textarea
             value={groupObservation}
             onChange={(e) => setGroupObservation(e.target.value)}
             placeholder="Observations générales sur le groupe (facultatif)..."
-            className="w-full rounded-md border px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors"
-            style={{ borderColor: '#e2e5ed' }}
-            onFocus={(e) => e.currentTarget.style.borderColor = '#0C71C3'}
-            onBlur={(e) => e.currentTarget.style.borderColor = '#e2e5ed'}
+            className="input-admin"
             rows={4}
           />
         </div>
 
         {/* Bouton sauvegarder */}
-        <div className="mt-8 flex justify-center">
+        <div className="mt-6 flex justify-center">
           <button
             onClick={saveAppel}
             disabled={saving}
-            className="btn-primary rounded-md px-8 py-3 text-base font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all cursor-pointer"
-            style={{
-              backgroundColor: saving ? '#cccccc' : '#0C71C3',
-              cursor: saving ? 'not-allowed' : 'pointer'
-            }}
+            className="btn-primary px-8 py-3 text-base"
           >
             {saving
               ? 'Enregistrement...'
