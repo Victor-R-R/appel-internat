@@ -12,6 +12,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { NiveauSelect } from '@/components/forms/NiveauSelect'
 import type { EleveDTO, AppelData } from '@/lib/types'
 import { ADMIN_ROLES } from '@/lib/constants'
+import { Check, X, AlertCircle, Save, GraduationCap, Users } from 'lucide-react'
 
 export default function AppelPage() {
   useScrollToTop()
@@ -213,13 +214,14 @@ export default function AppelPage() {
           <>
             {appelExists && (
               <p
-                className="rounded-md px-3 py-1 text-xs font-medium"
+                className="flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium"
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.15)',
                   color: 'var(--text-inverse)',
                 }}
               >
-                ✓ Appel déjà effectué aujourd&apos;hui
+                <Check className="h-3.5 w-3.5" />
+                Appel déjà effectué aujourd&apos;hui
               </p>
             )}
             <HeaderActionButton onClick={logout}>
@@ -240,10 +242,11 @@ export default function AppelPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label
-                className="mb-2 block text-sm font-medium"
+                className="mb-2 flex items-center gap-1.5 text-sm font-medium"
                 style={{ color: 'var(--text-secondary)' }}
               >
-                🎓 Niveau
+                <GraduationCap className="h-4 w-4" />
+                Niveau
               </label>
               <NiveauSelect
                 value={selectedNiveau}
@@ -253,18 +256,19 @@ export default function AppelPage() {
             </div>
             <div>
               <label
-                className="mb-2 block text-sm font-medium"
+                className="mb-2 flex items-center gap-1.5 text-sm font-medium"
                 style={{ color: 'var(--text-secondary)' }}
               >
-                👥 Groupe
+                <Users className="h-4 w-4" />
+                Groupe
               </label>
               <select
                 value={selectedSexeGroupe}
                 onChange={(e) => setSelectedSexeGroupe(e.target.value)}
                 className="input-admin"
               >
-                <option value="F">👧 Filles</option>
-                <option value="M">👦 Garçons</option>
+                <option value="F">Filles</option>
+                <option value="M">Garçons</option>
               </select>
             </div>
           </div>
@@ -314,7 +318,7 @@ export default function AppelPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => updateStatut(eleve.id, 'present')}
-                  className="px-4 py-2 text-sm font-medium transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-all cursor-pointer"
                   style={{
                     backgroundColor:
                       appels[eleve.id]?.statut === 'present'
@@ -331,11 +335,12 @@ export default function AppelPage() {
                     borderRadius: 'var(--radius-sm)',
                   }}
                 >
-                  ✓ Présent
+                  <Check className="h-4 w-4" />
+                  Présent
                 </button>
                 <button
                   onClick={() => updateStatut(eleve.id, 'acf')}
-                  className="px-4 py-2 text-sm font-medium transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-all cursor-pointer"
                   style={{
                     backgroundColor:
                       appels[eleve.id]?.statut === 'acf'
@@ -352,11 +357,12 @@ export default function AppelPage() {
                     borderRadius: 'var(--radius-sm)',
                   }}
                 >
+                  <AlertCircle className="h-4 w-4" />
                   ACF
                 </button>
                 <button
                   onClick={() => updateStatut(eleve.id, 'absent')}
-                  className="px-4 py-2 text-sm font-medium transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-all cursor-pointer"
                   style={{
                     backgroundColor:
                       appels[eleve.id]?.statut === 'absent'
@@ -373,7 +379,8 @@ export default function AppelPage() {
                     borderRadius: 'var(--radius-sm)',
                   }}
                 >
-                  ✗ Absent
+                  <X className="h-4 w-4" />
+                  Absent
                 </button>
               </div>
             </div>
@@ -390,10 +397,13 @@ export default function AppelPage() {
           }}
         >
           <h3
-            className="mb-4 text-base font-semibold"
+            className="mb-4 flex items-center gap-2 text-base font-semibold"
             style={{ color: 'var(--text-primary)' }}
           >
-            📝 Observations du groupe {selectedNiveau} {groupeLabel}
+            <svg className="h-5 w-5" style={{ color: 'var(--text-tertiary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Observations du groupe {selectedNiveau} {groupeLabel}
           </h3>
           <textarea
             value={groupObservation}
@@ -409,13 +419,14 @@ export default function AppelPage() {
           <button
             onClick={saveAppel}
             disabled={saving}
-            className="btn-primary px-8 py-3 text-base"
+            className="btn-primary flex items-center gap-2 px-8 py-3 text-base"
           >
+            <Save className="h-5 w-5" />
             {saving
               ? 'Enregistrement...'
               : appelExists
-              ? '💾 Modifier l\'appel'
-              : '💾 Enregistrer l\'appel'}
+              ? 'Modifier l\'appel'
+              : 'Enregistrer l\'appel'}
           </button>
         </div>
       </main>

@@ -11,6 +11,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ADMIN_ROLES } from '@/lib/constants'
 import { formatDateForAPI } from '@/lib/format'
 import { exportRecapToPDF } from '@/lib/pdf-export'
+import { Download, RotateCw, Loader2, FileText } from 'lucide-react'
 
 type Recap = {
   id: string
@@ -215,7 +216,7 @@ export default function RecapsPage() {
     >
       <AdminHeader
         title={`${user.prenom} ${user.nom} • Consultation des récaps`}
-        subtitle="📝 Récaps de la semaine"
+        subtitle="Récaps de la semaine"
         variant="blue"
         actions={
           <HeaderLinkButton href="/admin/dashboard">
@@ -399,16 +400,36 @@ export default function RecapsPage() {
                     <button
                       onClick={handleExportPDF}
                       disabled={exporting}
-                      className="btn-primary px-3 py-1.5 text-xs"
+                      className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs"
                     >
-                      {exporting ? '⏳ Export...' : '📥 Télécharger PDF'}
+                      {exporting ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          Export...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="h-3.5 w-3.5" />
+                          Télécharger PDF
+                        </>
+                      )}
                     </button>
                     <button
                       onClick={() => handleGenerateRecap(selectedDate)}
                       disabled={generating}
-                      className="btn-secondary px-3 py-1.5 text-xs"
+                      className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-xs"
                     >
-                      {generating ? '⏳ Regénération...' : '🔄 Régénérer'}
+                      {generating ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          Regénération...
+                        </>
+                      ) : (
+                        <>
+                          <RotateCw className="h-3.5 w-3.5" />
+                          Régénérer
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -424,9 +445,20 @@ export default function RecapsPage() {
                 <button
                   onClick={() => handleGenerateRecap(selectedDate)}
                   disabled={generating}
-                  className="btn-primary px-4 py-2 text-sm"
+                  className="btn-primary flex items-center gap-2 px-4 py-2 text-sm"
+                  style={{ margin: '0 auto' }}
                 >
-                  {generating ? '⏳ Génération en cours...' : '🤖 Générer un récap IA'}
+                  {generating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Génération en cours...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="h-4 w-4" />
+                      Générer un récap IA
+                    </>
+                  )}
                 </button>
               </div>
             )}

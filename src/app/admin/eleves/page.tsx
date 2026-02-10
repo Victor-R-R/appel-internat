@@ -118,7 +118,7 @@ export default function GestionElevesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader
-        title="🎓 Gestion des élèves"
+        title="Gestion des élèves"
         subtitle={`${eleves.filter((e) => e.actif).length} actifs • ${eleves.filter((e) => !e.actif).length} archivés`}
         variant="blue"
         actions={
@@ -156,7 +156,7 @@ export default function GestionElevesPage() {
               className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"
               style={{ borderColor: '#7EBEC5' }}
             >
-              <option value="tous">👥 Tous (Filles + Garçons)</option>
+              <option value="tous">Tous (Filles + Garçons)</option>
               <option value="F">👧 Filles</option>
               <option value="M">👦 Garçons</option>
             </select>

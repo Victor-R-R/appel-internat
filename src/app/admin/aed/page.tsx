@@ -95,7 +95,7 @@ export default function GestionAEDPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminHeader
-        title="👥 Gestion des utilisateurs"
+        title="Gestion des utilisateurs"
         subtitle={`${aeds.length} utilisateur${aeds.length > 1 ? 's' : ''} enregistré${aeds.length > 1 ? 's' : ''}`}
         variant="blue"
         actions={

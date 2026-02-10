@@ -7,6 +7,7 @@ import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderActionButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { Users, GraduationCap, BarChart3, FileText, Settings, TrendingUp, Shield } from 'lucide-react'
 
 type Stats = {
   totalAED: number
@@ -59,7 +60,7 @@ export default function AdminDashboard() {
     >
       <AdminHeader
         title={`${user.prenom} ${user.nom} • ${user.role === 'superadmin' ? 'Superadmin' : user.role === 'cpe' ? 'CPE' : user.role === 'manager' ? 'Manager' : 'AED'}`}
-        subtitle="🔐 Gestion"
+        subtitle="Gestion"
         variant="blue"
         actions={
           <HeaderActionButton onClick={logout}>
@@ -74,12 +75,12 @@ export default function AdminDashboard() {
           <StatCard
             title="AED"
             value={stats?.totalAED || 0}
-            icon="👥"
+            icon={<Users className="h-6 w-6" />}
           />
           <StatCard
             title="Élèves"
             value={stats?.totalEleves || 0}
-            icon="🎓"
+            icon={<GraduationCap className="h-6 w-6" />}
           />
         </div>
 
@@ -88,14 +89,14 @@ export default function AdminDashboard() {
           <NavCard
             title="Historique des appels"
             description="Voir tous les appels effectués par niveau et date"
-            icon="📊"
+            icon={<BarChart3 className="h-8 w-8" />}
             href="/admin/appels"
           />
 
           <NavCard
             title="Tous les récaps"
             description="Consulter les récapitulatifs de tous les niveaux"
-            icon="📝"
+            icon={<FileText className="h-8 w-8" />}
             href="/admin/recaps"
           />
 
@@ -104,28 +105,28 @@ export default function AdminDashboard() {
               <NavCard
                 title="Gérer les utilisateurs"
                 description="Ajouter, modifier ou supprimer des utilisateurs (AED, CPE, Manager)"
-                icon="👥"
+                icon={<Shield className="h-8 w-8" />}
                 href="/admin/aed"
               />
 
               <NavCard
                 title="Gérer les élèves"
                 description="Ajouter, modifier ou archiver des élèves par niveau"
-                icon="🎓"
+                icon={<GraduationCap className="h-8 w-8" />}
                 href="/admin/eleves"
               />
 
               <NavCard
                 title="Paramètres LLM"
                 description="Configurer les récaps automatiques (Claude/GPT)"
-                icon="🤖"
+                icon={<Settings className="h-8 w-8" />}
                 href="/admin/llm"
               />
 
               <NavCard
                 title="Statistiques"
                 description="Rapports et analyses détaillées"
-                icon="📈"
+                icon={<TrendingUp className="h-8 w-8" />}
                 href="/admin/stats"
               />
             </>
@@ -144,7 +145,7 @@ function StatCard({
 }: {
   title: string
   value: number
-  icon: string
+  icon: React.ReactNode
 }) {
   return (
     <div
@@ -157,7 +158,7 @@ function StatCard({
     >
       <div className="flex items-center">
         <div
-          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-2xl"
+          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full"
           style={{
             backgroundColor: 'var(--institutional-light)',
             color: 'var(--institutional)',
@@ -196,7 +197,7 @@ function NavCard({
 }: {
   title: string
   description: string
-  icon: string
+  icon: React.ReactNode
   href: string
 }) {
   return (
@@ -217,7 +218,12 @@ function NavCard({
         e.currentTarget.style.transform = 'translateY(0)'
       }}
     >
-      <div className="mb-3 text-4xl">{icon}</div>
+      <div
+        className="mb-3"
+        style={{ color: 'var(--institutional)' }}
+      >
+        {icon}
+      </div>
       <h3
         className="mb-2 text-lg"
         style={{
