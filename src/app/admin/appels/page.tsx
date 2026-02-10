@@ -1,15 +1,18 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth, useLogout } from '@/hooks/useAuth'
+import { useToast } from '@/contexts/ToastContext'
 import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderLinkButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Badge } from '@/components/ui/Badge'
 import { NiveauSelect } from '@/components/forms/NiveauSelect'
+import { ChevronDown } from 'lucide-react'
 import type { EleveDTO, AedSlim } from '@/lib/types'
-import { NIVEAUX } from '@/lib/constants'
+import { NIVEAUX, ADMIN_ROLES } from '@/lib/constants'
 
 type Eleve = EleveDTO
 type AED = AedSlim
@@ -31,6 +34,8 @@ type AppelGroup = {
 
 export default function HistoriqueAppelsPage() {
   useScrollToTop()
+  const router = useRouter()
+  const toast = useToast()
   const { user, loading: authLoading } = useAuth({
     requireAuth: true,
     redirectTo: '/login',
@@ -39,6 +44,7 @@ export default function HistoriqueAppelsPage() {
 
   const [groups, setGroups] = useState<AppelGroup[]>([])
   const [loading, setLoading] = useState(true)
+  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set())
 
   // Filtres
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -49,10 +55,18 @@ export default function HistoriqueAppelsPage() {
   const [searchQuery, setSearchQuery] = useState<string>('')
 
   useEffect(() => {
+    if (authLoading) return
+
+    if (user && !ADMIN_ROLES.includes(user.role)) {
+      toast.error('Accès réservé aux CPE, Managers et Superadmins')
+      router.push('/appel')
+      return
+    }
+
     if (user) {
       loadAppels()
     }
-  }, [user, selectedDate, selectedNiveau, selectedSexe])
+  }, [user, authLoading, router, toast, selectedDate, selectedNiveau, selectedSexe])
 
   const loadAppels = async () => {
     setLoading(true)
@@ -129,6 +143,21 @@ export default function HistoriqueAppelsPage() {
    */
   const getTotalResults = () => {
     return getFilteredGroups().reduce((sum, group) => sum + group.appels.length, 0)
+  }
+
+  /**
+   * Toggle l'expansion d'un groupe
+   */
+  const toggleGroup = (index: number) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(index)) {
+        next.delete(index)
+      } else {
+        next.add(index)
+      }
+      return next
+    })
   }
 
   if (authLoading || loading) {
@@ -237,24 +266,33 @@ export default function HistoriqueAppelsPage() {
           <div className="space-y-6">
             {getFilteredGroups().map((group, index) => {
               const stats = getStats(group.appels)
+              const isExpanded = expandedGroups.has(index)
               return (
                 <div
                   key={index}
                   className="overflow-hidden rounded-lg bg-white shadow"
                 >
-                  {/* En-tête du groupe */}
+                  {/* En-tête du groupe - Cliquable */}
                   <div
-                    className="bg-gradient-to-r from-[#0C71C3] to-[#4d8dc1] px-6 py-4 text-white"
+                    onClick={() => toggleGroup(index)}
+                    className="cursor-pointer bg-gradient-to-r from-[#0C71C3] to-[#4d8dc1] px-6 py-4 text-white transition-all hover:from-[#0b65b0] hover:to-[#4380af]"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <h3 className="text-lg font-bold">
-                          📚 {group.niveau} •{' '}
-                          {group.sexeGroupe === 'F' ? 'Filles' : 'Garçons'}
-                        </h3>
-                        <p className="mt-1 text-sm opacity-90">
-                          📅 {formatDate(group.date)} • Par {group.aed.prenom} {group.aed.nom}
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <ChevronDown
+                          className={`h-5 w-5 transition-transform duration-200 ${
+                            isExpanded ? 'rotate-180' : ''
+                          }`}
+                        />
+                        <div>
+                          <h3 className="text-lg font-bold">
+                            📚 {group.niveau} •{' '}
+                            {group.sexeGroupe === 'F' ? 'Filles' : 'Garçons'}
+                          </h3>
+                          <p className="mt-1 text-sm opacity-90">
+                            📅 {formatDate(group.date)} • Par {group.aed.prenom} {group.aed.nom}
+                          </p>
+                        </div>
                       </div>
                       <div className="flex gap-3">
                         <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium">
@@ -282,40 +320,42 @@ export default function HistoriqueAppelsPage() {
                     )}
                   </div>
 
-                  {/* Liste des appels */}
-                  <div className="divide-y divide-gray-200">
-                    {group.appels.map((appel) => (
-                      <div
-                        key={appel.id}
-                        className={`px-6 py-4 ${appel.statut === 'absent' ? 'bg-red-50' : ''}`}
-                      >
-                        <div className="flex items-center justify-between">
-                          {/* Infos élève */}
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {appel.eleve.nom} {appel.eleve.prenom}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {appel.eleve.sexe === 'M' ? 'Garçon' : 'Fille'}
-                            </p>
-                          </div>
+                  {/* Liste des appels - Affichée uniquement si expanded */}
+                  {isExpanded && (
+                    <div className="divide-y divide-gray-200">
+                      {group.appels.map((appel) => (
+                        <div
+                          key={appel.id}
+                          className={`px-6 py-4 ${appel.statut === 'absent' ? 'bg-red-50' : ''}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            {/* Infos élève */}
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {appel.eleve.nom} {appel.eleve.prenom}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {appel.eleve.sexe === 'M' ? 'Garçon' : 'Fille'}
+                              </p>
+                            </div>
 
-                          {/* Badge statut */}
-                          <div>
-                            {appel.statut === 'present' && (
-                              <Badge variant="present">✓ Présent</Badge>
-                            )}
-                            {appel.statut === 'acf' && (
-                              <Badge variant="acf">ACF</Badge>
-                            )}
-                            {appel.statut === 'absent' && (
-                              <Badge variant="absent">✗ Absent</Badge>
-                            )}
+                            {/* Badge statut */}
+                            <div>
+                              {appel.statut === 'present' && (
+                                <Badge variant="present">✓ Présent</Badge>
+                              )}
+                              {appel.statut === 'acf' && (
+                                <Badge variant="acf">ACF</Badge>
+                              )}
+                              {appel.statut === 'absent' && (
+                                <Badge variant="absent">✗ Absent</Badge>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )
             })}
