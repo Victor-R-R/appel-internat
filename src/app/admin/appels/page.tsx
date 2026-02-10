@@ -141,7 +141,7 @@ export default function HistoriqueAppelsPage() {
     <div className="min-h-screen bg-gray-50">
       <AdminHeader
         title={`${user.prenom} ${user.nom} • Consultation des appels`}
-        subtitle="📊 Historique des appels"
+        subtitle="Historique et consultation"
         variant="blue"
         actions={
           <HeaderLinkButton href="/admin/dashboard">

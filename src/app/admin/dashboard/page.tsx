@@ -60,7 +60,7 @@ export default function AdminDashboard() {
     >
       <AdminHeader
         title={`${user.prenom} ${user.nom} • ${user.role === 'superadmin' ? 'Superadmin' : user.role === 'cpe' ? 'CPE' : user.role === 'manager' ? 'Manager' : 'AED'}`}
-        subtitle="Gestion"
+        subtitle="Tableau de bord"
         variant="blue"
         actions={
           <HeaderActionButton onClick={logout}>

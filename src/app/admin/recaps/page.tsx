@@ -216,7 +216,7 @@ export default function RecapsPage() {
     >
       <AdminHeader
         title={`${user.prenom} ${user.nom} • Consultation des récaps`}
-        subtitle="Récaps de la semaine"
+        subtitle="Récapitulatifs quotidiens"
         variant="blue"
         actions={
           <HeaderLinkButton href="/admin/dashboard">
