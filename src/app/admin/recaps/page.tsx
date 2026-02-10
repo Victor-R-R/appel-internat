@@ -10,6 +10,7 @@ import { HeaderLinkButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ADMIN_ROLES } from '@/lib/constants'
 import { formatDateForAPI } from '@/lib/format'
+import { exportRecapToPDF } from '@/lib/pdf-export'
 
 type Recap = {
   id: string
@@ -30,6 +31,7 @@ export default function RecapsPage() {
   const [loading, setLoading] = useState(true)
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [generating, setGenerating] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     if (authLoading) return
@@ -179,6 +181,24 @@ export default function RecapsPage() {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))
   }
 
+  const handleExportPDF = () => {
+    if (!currentRecap) {
+      toast.error('Aucun récap à exporter')
+      return
+    }
+
+    setExporting(true)
+    try {
+      exportRecapToPDF(currentRecap)
+      toast.success('PDF téléchargé avec succès !')
+    } catch (error) {
+      console.error('Erreur export PDF:', error)
+      toast.error('Erreur lors de l\'export PDF')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   if (authLoading || loading) {
     return <LoadingSpinner />
   }
@@ -290,14 +310,24 @@ export default function RecapsPage() {
                     Généré le {new Date(currentRecap.createdAt).toLocaleDateString('fr-FR')} à{' '}
                     {new Date(currentRecap.createdAt).toLocaleTimeString('fr-FR')}
                   </p>
-                  <button
-                    onClick={() => handleGenerateRecap(selectedDate)}
-                    disabled={generating}
-                    className="rounded-md px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
-                    style={{ backgroundColor: '#4d8dc1' }}
-                  >
-                    {generating ? '⏳ Regénération...' : '🔄 Régénérer'}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleExportPDF}
+                      disabled={exporting}
+                      className="rounded-md px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                      style={{ backgroundColor: '#0C71C3' }}
+                    >
+                      {exporting ? '⏳ Export...' : '📥 Télécharger PDF'}
+                    </button>
+                    <button
+                      onClick={() => handleGenerateRecap(selectedDate)}
+                      disabled={generating}
+                      className="rounded-md px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                      style={{ backgroundColor: '#4d8dc1' }}
+                    >
+                      {generating ? '⏳ Regénération...' : '🔄 Régénérer'}
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
