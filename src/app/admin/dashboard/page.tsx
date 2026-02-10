@@ -53,7 +53,10 @@ export default function AdminDashboard() {
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: 'var(--surface-base)' }}
+    >
       <AdminHeader
         title={`${user.prenom} ${user.nom} • ${user.role === 'superadmin' ? 'Superadmin' : user.role === 'cpe' ? 'CPE' : user.role === 'manager' ? 'Manager' : 'AED'}`}
         subtitle="🔐 Gestion"
@@ -72,78 +75,60 @@ export default function AdminDashboard() {
             title="AED"
             value={stats?.totalAED || 0}
             icon="👥"
-            color="bg-[#0C71C3]"
           />
           <StatCard
             title="Élèves"
             value={stats?.totalEleves || 0}
             icon="🎓"
-            color="bg-[#7EBEC5]"
           />
         </div>
 
         {/* Navigation */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Historique des appels - Tous */}
           <NavCard
             title="Historique des appels"
             description="Voir tous les appels effectués par niveau et date"
             icon="📊"
             href="/admin/appels"
-            color="bg-[#e2e5ed] border-[#0C71C3]/30 hover:bg-[#d5dae8]"
           />
 
-          {/* Récaps - Tous */}
           <NavCard
             title="Tous les récaps"
             description="Consulter les récapitulatifs de tous les niveaux"
             icon="📝"
             href="/admin/recaps"
-            color="bg-[#e2e5ed] border-[#4d8dc1]/30 hover:bg-[#d5dae8]"
           />
 
-          {/* Gestion utilisateurs - Superadmin uniquement */}
           {user.role === 'superadmin' && (
-            <NavCard
-              title="Gérer les utilisateurs"
-              description="Ajouter, modifier ou supprimer des utilisateurs (AED, CPE, Manager)"
-              icon="👥"
-              href="/admin/aed"
-              color="bg-[#e2e5ed] border-[#0C71C3]/30 hover:bg-[#d5dae8]"
-            />
-          )}
+            <>
+              <NavCard
+                title="Gérer les utilisateurs"
+                description="Ajouter, modifier ou supprimer des utilisateurs (AED, CPE, Manager)"
+                icon="👥"
+                href="/admin/aed"
+              />
 
-          {/* Gestion élèves - Superadmin uniquement */}
-          {user.role === 'superadmin' && (
-            <NavCard
-              title="Gérer les élèves"
-              description="Ajouter, modifier ou archiver des élèves par niveau"
-              icon="🎓"
-              href="/admin/eleves"
-              color="bg-[#e2e5ed] border-[#7EBEC5]/30 hover:bg-[#d5dae8]"
-            />
-          )}
+              <NavCard
+                title="Gérer les élèves"
+                description="Ajouter, modifier ou archiver des élèves par niveau"
+                icon="🎓"
+                href="/admin/eleves"
+              />
 
-          {/* Paramètres LLM - Superadmin uniquement */}
-          {user.role === 'superadmin' && (
-            <NavCard
-              title="Paramètres LLM"
-              description="Configurer les récaps automatiques (Claude/GPT)"
-              icon="🤖"
-              href="/admin/llm"
-              color="bg-[#e2e5ed] border-[#7EBEC5]/30 hover:bg-[#d5dae8]"
-            />
-          )}
+              <NavCard
+                title="Paramètres LLM"
+                description="Configurer les récaps automatiques (Claude/GPT)"
+                icon="🤖"
+                href="/admin/llm"
+              />
 
-          {/* Statistiques - Superadmin uniquement */}
-          {user.role === 'superadmin' && (
-            <NavCard
-              title="Statistiques"
-              description="Rapports et analyses détaillées"
-              icon="📈"
-              href="/admin/stats"
-              color="bg-[#e2e5ed] border-[#4d8dc1]/30 hover:bg-[#d5dae8]"
-            />
+              <NavCard
+                title="Statistiques"
+                description="Rapports et analyses détaillées"
+                icon="📈"
+                href="/admin/stats"
+              />
+            </>
           )}
         </div>
       </main>
@@ -156,24 +141,46 @@ function StatCard({
   title,
   value,
   icon,
-  color,
 }: {
   title: string
   value: number
   icon: string
-  color: string
 }) {
   return (
-    <div className="overflow-hidden rounded-lg bg-white shadow">
-      <div className="p-6">
-        <div className="flex items-center">
-          <div className={`${color} flex h-12 w-12 items-center justify-center rounded-full text-2xl`}>
-            {icon}
-          </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-500">{title}</p>
-            <p className="text-3xl font-bold text-gray-900">{value}</p>
-          </div>
+    <div
+      className="p-6"
+      style={{
+        backgroundColor: 'var(--surface-card)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-md)',
+      }}
+    >
+      <div className="flex items-center">
+        <div
+          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-2xl"
+          style={{
+            backgroundColor: 'var(--institutional-light)',
+            color: 'var(--institutional)',
+          }}
+        >
+          {icon}
+        </div>
+        <div className="ml-4">
+          <p
+            className="text-xs font-medium uppercase tracking-wide"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
+            {title}
+          </p>
+          <p
+            className="text-3xl"
+            style={{
+              color: 'var(--text-primary)',
+              fontWeight: 'var(--font-bold)',
+            }}
+          >
+            {value}
+          </p>
         </div>
       </div>
     </div>
@@ -186,22 +193,46 @@ function NavCard({
   description,
   icon,
   href,
-  color,
 }: {
   title: string
   description: string
   icon: string
   href: string
-  color: string
 }) {
   return (
     <Link
       href={href}
-      className={`block rounded-lg border-2 p-6 transition-all ${color}`}
+      className="block p-6 transition-all"
+      style={{
+        backgroundColor: 'var(--surface-card)',
+        border: '1px solid var(--border-subtle)',
+        borderRadius: 'var(--radius-md)',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = 'var(--border-standard)'
+        e.currentTarget.style.transform = 'translateY(-2px)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = 'var(--border-subtle)'
+        e.currentTarget.style.transform = 'translateY(0)'
+      }}
     >
       <div className="mb-3 text-4xl">{icon}</div>
-      <h3 className="mb-2 text-lg font-semibold text-gray-900">{title}</h3>
-      <p className="text-sm text-gray-600">{description}</p>
+      <h3
+        className="mb-2 text-lg"
+        style={{
+          color: 'var(--text-primary)',
+          fontWeight: 'var(--font-semibold)',
+        }}
+      >
+        {title}
+      </h3>
+      <p
+        className="text-sm"
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        {description}
+      </p>
     </Link>
   )
 }

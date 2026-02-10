@@ -13,32 +13,36 @@ export interface ToastProps {
 }
 
 const ICONS: Record<ToastType, string> = {
-  success: '✅',
-  error: '❌',
-  warning: '⚠️',
-  info: 'ℹ️',
+  success: '✓',
+  error: '✕',
+  warning: '!',
+  info: 'i',
 }
 
-const COLORS: Record<ToastType, { bg: string; border: string; text: string }> = {
+const STYLES: Record<ToastType, { bg: string; border: string; color: string; icon: string }> = {
   success: {
-    bg: 'bg-green-50',
-    border: 'border-green-500',
-    text: 'text-green-800',
+    bg: 'var(--success-light)',
+    border: 'var(--success-border)',
+    color: 'var(--success)',
+    icon: 'var(--success)',
   },
   error: {
-    bg: 'bg-red-50',
-    border: 'border-red-500',
-    text: 'text-red-800',
+    bg: 'var(--error-light)',
+    border: 'var(--error-border)',
+    color: 'var(--error)',
+    icon: 'var(--error)',
   },
   warning: {
-    bg: 'bg-yellow-50',
-    border: 'border-yellow-500',
-    text: 'text-yellow-800',
+    bg: 'var(--warning-light)',
+    border: 'var(--warning-border)',
+    color: 'var(--warning)',
+    icon: 'var(--warning)',
   },
   info: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-500',
-    text: 'text-blue-800',
+    bg: 'var(--institutional-light)',
+    border: 'var(--institutional)',
+    color: 'var(--institutional)',
+    icon: 'var(--institutional)',
   },
 }
 
@@ -50,22 +54,50 @@ export function Toast({ id, type, message, duration = 4000, onClose }: ToastProp
     }
   }, [duration, onClose])
 
-  const colors = COLORS[type]
+  const styles = STYLES[type]
 
   return (
     <div
-      className={`pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-lg border-l-4 p-4 shadow-lg ${colors.bg} ${colors.border}`}
+      className="pointer-events-auto flex w-full max-w-md items-center gap-3 p-4"
       role="alert"
+      style={{
+        backgroundColor: styles.bg,
+        borderLeft: `3px solid ${styles.border}`,
+        borderRadius: 'var(--radius-md)',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      }}
     >
-      <span className="text-2xl">{ICONS[type]}</span>
-      <p className={`flex-1 text-sm font-medium ${colors.text}`}>{message}</p>
+      <span
+        className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold"
+        style={{
+          backgroundColor: styles.icon,
+          color: 'var(--text-inverse)',
+        }}
+      >
+        {ICONS[type]}
+      </span>
+      <p
+        className="flex-1 text-sm font-medium"
+        style={{ color: styles.color }}
+      >
+        {message}
+      </p>
       <button
         onClick={onClose}
-        className={`ml-auto flex-shrink-0 rounded-lg p-1.5 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 ${colors.text}`}
+        className="ml-auto flex-shrink-0 rounded p-1 transition-colors"
+        style={{
+          color: styles.color,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.05)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent'
+        }}
         aria-label="Fermer"
       >
         <svg
-          className="h-5 w-5"
+          className="h-4 w-4"
           fill="currentColor"
           viewBox="0 0 20 20"
           xmlns="http://www.w3.org/2000/svg"

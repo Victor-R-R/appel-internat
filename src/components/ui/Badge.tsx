@@ -10,48 +10,58 @@ interface BadgeProps {
   className?: string
 }
 
-const ROLE_STYLES: Record<RoleBadgeVariant, { bg: string; text: string }> = {
-  superadmin: { bg: '#0C71C3', text: 'white' },
-  admin: { bg: '#4d8dc1', text: 'white' },
-  aed: { bg: '#7EBEC5', text: 'white' },
-}
-
 export function Badge({ variant, role, children, className = '' }: BadgeProps) {
-  // Role badge
+  // Role badge - style institutionnel
   if (role) {
     const roleKey = role.toLowerCase() as RoleBadgeVariant
-    const style = ROLE_STYLES[roleKey] || ROLE_STYLES.aed
     return (
       <span
-        className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${className}`}
-        style={{ backgroundColor: style.bg, color: style.text }}
+        className={`inline-flex items-center px-2 py-0.5 text-xs font-semibold ${className}`}
+        style={{
+          backgroundColor: 'var(--institutional-light)',
+          color: 'var(--institutional)',
+          borderRadius: 'var(--radius-sm)',
+          border: '1px solid var(--institutional)',
+        }}
       >
         {children}
       </span>
     )
   }
 
-  // Status badge
-  const styles = {
-    present: 'text-white',
-    acf: 'text-white',
-    absent: 'bg-red-600 text-white',
-    info: '',
+  // Status badge - couleurs sémantiques
+  const variantStyles = {
+    present: {
+      backgroundColor: 'var(--success-light)',
+      color: 'var(--success)',
+      border: '1px solid var(--success-border)',
+    },
+    acf: {
+      backgroundColor: 'var(--warning-light)',
+      color: 'var(--warning)',
+      border: '1px solid var(--warning-border)',
+    },
+    absent: {
+      backgroundColor: 'var(--error-light)',
+      color: 'var(--error)',
+      border: '1px solid var(--error-border)',
+    },
+    info: {
+      backgroundColor: 'var(--institutional-light)',
+      color: 'var(--institutional)',
+      border: '1px solid var(--border-standard)',
+    },
   }
 
-  const bgStyles = {
-    present: { backgroundColor: '#7EBEC5' },
-    acf: { backgroundColor: '#4d8dc1' },
-    absent: {},
-    info: { backgroundColor: '#e2e5ed', color: '#7EBEC5' },
-  }
+  const style = variantStyles[variant || 'info']
 
   return (
     <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${
-        styles[variant || 'info']
-      } ${className}`}
-      style={bgStyles[variant || 'info']}
+      className={`inline-flex items-center px-3 py-1 text-xs font-medium ${className}`}
+      style={{
+        ...style,
+        borderRadius: 'var(--radius-sm)',
+      }}
     >
       {children}
     </span>

@@ -52,18 +52,43 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-lg">
+    <div
+      className="flex min-h-screen items-center justify-center"
+      style={{ backgroundColor: 'var(--surface-base)' }}
+    >
+      <div
+        className="w-full max-w-md space-y-8 p-8"
+        style={{
+          backgroundColor: 'var(--surface-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-lg)',
+        }}
+      >
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold" style={{ color: '#0C71C3' }}>
+          <h1
+            className="text-3xl"
+            style={{
+              color: 'var(--institutional)',
+              fontWeight: 'var(--font-bold)',
+            }}
+          >
             Appel Internat
           </h1>
-          <p className="mt-2 text-sm font-medium" style={{ color: '#4d8dc1' }}>
+          <p
+            className="mt-2 text-sm"
+            style={{
+              color: 'var(--text-secondary)',
+              fontWeight: 'var(--font-semibold)',
+            }}
+          >
             Internat d&apos;Excellence de Sourdun
           </p>
-          <p className="mt-1 text-sm text-gray-600">
-            Connectez-vous avec votre compte AED
+          <p
+            className="mt-1 text-sm"
+            style={{ color: 'var(--text-tertiary)' }}
+          >
+            Connectez-vous avec votre compte
           </p>
         </div>
 
@@ -71,14 +96,30 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           {/* Message d'erreur */}
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
-              <p className="text-sm text-red-800">{error}</p>
+            <div
+              className="p-4"
+              style={{
+                backgroundColor: 'var(--error-light)',
+                borderLeft: '3px solid var(--error)',
+                borderRadius: 'var(--radius-sm)',
+              }}
+            >
+              <p
+                className="text-sm font-medium"
+                style={{ color: 'var(--error)' }}
+              >
+                {error}
+              </p>
             </div>
           )}
 
           {/* Champ Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               Email
             </label>
             <input
@@ -87,17 +128,18 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors"
-              style={{ borderColor: '#e2e5ed' }}
-              onFocus={(e) => e.target.style.borderColor = '#0C71C3'}
-              onBlur={(e) => e.target.style.borderColor = '#e2e5ed'}
+              className="input-admin mt-1"
               placeholder="aed.6eme@internat.fr"
             />
           </div>
 
           {/* Champ Mot de passe */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               Mot de passe
             </label>
             <input
@@ -106,10 +148,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border px-3 py-2 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 transition-colors"
-              style={{ borderColor: '#e2e5ed' }}
-              onFocus={(e) => e.target.style.borderColor = '#0C71C3'}
-              onBlur={(e) => e.target.style.borderColor = '#e2e5ed'}
+              className="input-admin mt-1"
               placeholder="••••••••"
             />
           </div>
@@ -118,7 +157,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 cursor-pointer"
+            className="btn-primary w-full"
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
@@ -126,8 +165,17 @@ export default function LoginPage() {
 
         {/* Infos de test - seulement en développement */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="mt-4 rounded-md bg-blue-50 p-4">
-            <p className="text-xs text-blue-800">
+          <div
+            className="mt-4 p-4"
+            style={{
+              backgroundColor: 'var(--institutional-light)',
+              borderRadius: 'var(--radius-sm)',
+            }}
+          >
+            <p
+              className="text-xs"
+              style={{ color: 'var(--institutional)' }}
+            >
               <strong>Test :</strong> aed.6eme@internat.fr / password123
             </p>
           </div>

@@ -209,7 +209,10 @@ export default function RecapsPage() {
   const monthName = currentMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div
+      className="min-h-screen"
+      style={{ backgroundColor: 'var(--surface-base)' }}
+    >
       <AdminHeader
         title={`${user.prenom} ${user.nom} • Consultation des récaps`}
         subtitle="📝 Récaps de la semaine"
@@ -224,19 +227,34 @@ export default function RecapsPage() {
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Calendrier */}
-          <div className="rounded-lg bg-white p-6 shadow">
+          <div
+            className="p-6"
+            style={{
+              backgroundColor: 'var(--surface-card)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+            }}
+          >
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900 capitalize">{monthName}</h2>
+              <h2
+                className="text-lg capitalize"
+                style={{
+                  color: 'var(--text-primary)',
+                  fontWeight: 'var(--font-semibold)',
+                }}
+              >
+                {monthName}
+              </h2>
               <div className="flex gap-2">
                 <button
                   onClick={goToPreviousMonth}
-                  className="rounded-md bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 cursor-pointer"
+                  className="btn-secondary px-3 py-1 text-sm"
                 >
                   ← Précédent
                 </button>
                 <button
                   onClick={goToNextMonth}
-                  className="rounded-md bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 hover:bg-gray-200 cursor-pointer"
+                  className="btn-secondary px-3 py-1 text-sm"
                 >
                   Suivant →
                 </button>
@@ -246,7 +264,11 @@ export default function RecapsPage() {
             {/* Calendrier */}
             <div className="grid grid-cols-7 gap-1">
               {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day) => (
-                <div key={day} className="p-2 text-center text-xs font-medium text-gray-500">
+                <div
+                  key={day}
+                  className="p-2 text-center text-xs font-medium"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
                   {day}
                 </div>
               ))}
@@ -263,50 +285,113 @@ export default function RecapsPage() {
                   <button
                     key={i}
                     onClick={() => setSelectedDate(date)}
-                    className={`relative p-2 text-center text-sm transition-all ${
-                      selected
-                        ? 'bg-[#0C71C3] text-white font-bold'
+                    className="relative p-2 text-center text-sm transition-all cursor-pointer"
+                    style={{
+                      backgroundColor: selected
+                        ? 'var(--institutional)'
                         : today
-                          ? 'bg-blue-100 font-bold text-[#0C71C3]'
+                        ? 'var(--institutional-light)'
+                        : hasRecap
+                        ? 'var(--success-light)'
+                        : 'transparent',
+                      color: selected
+                        ? 'var(--text-inverse)'
+                        : today || hasRecap
+                        ? selected ? 'var(--text-inverse)' : today ? 'var(--institutional)' : 'var(--success)'
+                        : 'var(--text-primary)',
+                      fontWeight: selected || today ? 'var(--font-bold)' : hasRecap ? 'var(--font-medium)' : 'var(--font-normal)',
+                      borderRadius: 'var(--radius-sm)',
+                      border: hasRecap && !selected ? '1px solid var(--success-border)' : '1px solid transparent',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!selected) {
+                        e.currentTarget.style.backgroundColor = hasRecap
+                          ? 'var(--success-light)'
+                          : 'var(--control-bg-hover)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!selected) {
+                        e.currentTarget.style.backgroundColor = today
+                          ? 'var(--institutional-light)'
                           : hasRecap
-                            ? 'bg-green-50 text-green-700 font-medium hover:bg-green-100'
-                            : 'text-gray-700 hover:bg-gray-100'
-                    } rounded-md cursor-pointer`}
+                          ? 'var(--success-light)'
+                          : 'transparent'
+                      }
+                    }}
                   >
                     {date.getDate()}
                     {hasRecap && !selected && (
-                      <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-green-500" />
+                      <span
+                        className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: 'var(--success)' }}
+                      />
                     )}
                   </button>
                 )
               })}
             </div>
 
-            <div className="mt-4 flex items-center gap-4 text-xs text-gray-600">
+            <div
+              className="mt-4 flex items-center gap-4 text-xs"
+              style={{ color: 'var(--text-tertiary)' }}
+            >
               <div className="flex items-center gap-1">
-                <div className="h-3 w-3 rounded bg-blue-100"></div>
+                <div
+                  className="h-3 w-3 rounded"
+                  style={{ backgroundColor: 'var(--institutional-light)' }}
+                />
                 <span>Aujourd&apos;hui</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="h-3 w-3 rounded bg-green-50 border border-green-200"></div>
+                <div
+                  className="h-3 w-3 rounded"
+                  style={{
+                    backgroundColor: 'var(--success-light)',
+                    border: '1px solid var(--success-border)',
+                  }}
+                />
                 <span>Récap disponible</span>
               </div>
             </div>
           </div>
 
           {/* Récap du jour sélectionné */}
-          <div className="rounded-lg bg-white p-6 shadow">
-            <h2 className="mb-4 text-lg font-bold text-gray-900">
+          <div
+            className="p-6"
+            style={{
+              backgroundColor: 'var(--surface-card)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+            }}
+          >
+            <h2
+              className="mb-4 text-lg"
+              style={{
+                color: 'var(--text-primary)',
+                fontWeight: 'var(--font-semibold)',
+              }}
+            >
               Récap du {formatDate(selectedDate.toISOString())}
             </h2>
 
             {currentRecap ? (
               <div>
-                <div className="mb-4 whitespace-pre-wrap rounded-md bg-gray-50 p-4 text-sm text-gray-700">
+                <div
+                  className="mb-4 whitespace-pre-wrap p-4 text-sm"
+                  style={{
+                    backgroundColor: 'var(--surface-base)',
+                    color: 'var(--text-secondary)',
+                    borderRadius: 'var(--radius-sm)',
+                  }}
+                >
                   {currentRecap.contenu}
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-gray-500">
+                  <p
+                    className="text-xs"
+                    style={{ color: 'var(--text-tertiary)' }}
+                  >
                     Généré le {new Date(currentRecap.createdAt).toLocaleDateString('fr-FR')} à{' '}
                     {new Date(currentRecap.createdAt).toLocaleTimeString('fr-FR')}
                   </p>
@@ -314,16 +399,14 @@ export default function RecapsPage() {
                     <button
                       onClick={handleExportPDF}
                       disabled={exporting}
-                      className="rounded-md px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
-                      style={{ backgroundColor: '#0C71C3' }}
+                      className="btn-primary px-3 py-1.5 text-xs"
                     >
                       {exporting ? '⏳ Export...' : '📥 Télécharger PDF'}
                     </button>
                     <button
                       onClick={() => handleGenerateRecap(selectedDate)}
                       disabled={generating}
-                      className="rounded-md px-3 py-1.5 text-xs font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
-                      style={{ backgroundColor: '#4d8dc1' }}
+                      className="btn-secondary px-3 py-1.5 text-xs"
                     >
                       {generating ? '⏳ Regénération...' : '🔄 Régénérer'}
                     </button>
@@ -332,12 +415,16 @@ export default function RecapsPage() {
               </div>
             ) : (
               <div className="text-center">
-                <p className="mb-4 text-gray-500">Aucun récap disponible pour cette date</p>
+                <p
+                  className="mb-4"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
+                  Aucun récap disponible pour cette date
+                </p>
                 <button
                   onClick={() => handleGenerateRecap(selectedDate)}
                   disabled={generating}
-                  className="rounded-md px-4 py-2 text-sm font-semibold text-white transition-all hover:opacity-90 disabled:opacity-50 cursor-pointer"
-                  style={{ backgroundColor: '#4d8dc1' }}
+                  className="btn-primary px-4 py-2 text-sm"
                 >
                   {generating ? '⏳ Génération en cours...' : '🤖 Générer un récap IA'}
                 </button>

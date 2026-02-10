@@ -1,76 +1,241 @@
 @import "tailwindcss";
 
 :root {
-  /* Palette Internat d'Excellence de Sourdun */
-  --background: #ffffff;
-  --foreground: #333333;
+  /* ═══════════════════════════════════════════════════
+     SYSTÈME DE DESIGN - REGISTRE ADMINISTRATIF NUMÉRIQUE
+     Internat d'Excellence de Sourdun
+     ═══════════════════════════════════════════════════ */
 
-  /* Couleurs principales */
-  --primary-blue: #0C71C3;
-  --secondary-blue: #4d8dc1;
-  --accent-teal: #7EBEC5;
+  /* ──────────────────────────────────────────────────
+     SURFACES (Élévation via teintes)
+     Base → Carte → Modal (blanc → gris perle très clair)
+     ────────────────────────────────────────────────── */
+  --surface-base: #fafafa;           /* Fond de page - gris perle très clair */
+  --surface-card: #ffffff;           /* Cartes, conteneurs - blanc papier */
+  --surface-elevated: #ffffff;       /* Modals, dropdowns - blanc pur */
+  --surface-institutional: #0C71C3;  /* Header institutionnel - bleu confiance */
 
-  /* Couleurs neutres */
-  --dark-gray: #333333;
-  --light-gray: #e2e5ed;
-  --white: #ffffff;
+  /* ──────────────────────────────────────────────────
+     TEXTE (Hiérarchie d'encre)
+     Noir encre → Gris ardoise → Gris clair
+     ────────────────────────────────────────────────── */
+  --text-primary: #1a1a1a;     /* Titres, données importantes - noir encre */
+  --text-secondary: #525252;   /* Corps de texte, labels - gris ardoise */
+  --text-tertiary: #737373;    /* Métadonnées, descriptions - gris moyen */
+  --text-muted: #a3a3a3;       /* Placeholders, désactivé - gris clair */
+  --text-inverse: #ffffff;     /* Texte sur fonds colorés */
+
+  /* ──────────────────────────────────────────────────
+     BORDURES (Séparation)
+     Subtil → Standard → Emphasis → Focus
+     ────────────────────────────────────────────────── */
+  --border-subtle: rgba(0, 0, 0, 0.06);    /* Séparations douces */
+  --border-standard: rgba(0, 0, 0, 0.10);  /* Bordures par défaut */
+  --border-emphasis: rgba(0, 0, 0, 0.15);  /* Bordures importantes */
+  --border-focus: #0C71C3;                 /* Focus rings */
+
+  /* ──────────────────────────────────────────────────
+     COULEURS SÉMANTIQUES (Statuts institutionnels)
+     ────────────────────────────────────────────────── */
+
+  /* Institutionnel - Bleu confiance */
+  --institutional: #0C71C3;
+  --institutional-hover: #0a5ea3;
+  --institutional-light: rgba(12, 113, 195, 0.08);
+
+  /* Validation - Vert présent */
+  --success: #16a34a;
+  --success-hover: #15803d;
+  --success-light: rgba(22, 163, 74, 0.08);
+  --success-border: rgba(22, 163, 74, 0.2);
+
+  /* Attention - Orange ACF */
+  --warning: #ea580c;
+  --warning-hover: #c2410c;
+  --warning-light: rgba(234, 88, 12, 0.08);
+  --warning-border: rgba(234, 88, 12, 0.2);
+
+  /* Critique - Rouge absent */
+  --error: #dc2626;
+  --error-hover: #b91c1c;
+  --error-light: rgba(220, 38, 38, 0.08);
+  --error-border: rgba(220, 38, 38, 0.2);
+
+  /* ──────────────────────────────────────────────────
+     CONTRÔLES (Inputs, boutons)
+     ────────────────────────────────────────────────── */
+  --control-bg: #ffffff;
+  --control-bg-hover: #f5f5f5;
+  --control-border: var(--border-standard);
+  --control-border-focus: var(--border-focus);
+
+  /* ──────────────────────────────────────────────────
+     ESPACEMENT (Base 4px)
+     Micro → Composant → Section → Majeur
+     ────────────────────────────────────────────────── */
+  --space-micro: 0.25rem;    /* 4px - gaps icônes */
+  --space-xs: 0.5rem;        /* 8px - padding mini */
+  --space-sm: 0.75rem;       /* 12px - gaps internes */
+  --space-md: 1rem;          /* 16px - padding standard */
+  --space-lg: 1.5rem;        /* 24px - padding cartes */
+  --space-xl: 2rem;          /* 32px - sections */
+  --space-2xl: 3rem;         /* 48px - séparations majeures */
+
+  /* ──────────────────────────────────────────────────
+     TYPOGRAPHIE
+     ────────────────────────────────────────────────── */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+
+  /* Poids */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Tailles */
+  --text-xs: 0.75rem;      /* 12px - labels secondaires */
+  --text-sm: 0.875rem;     /* 14px - corps de texte */
+  --text-base: 1rem;       /* 16px - texte standard */
+  --text-lg: 1.125rem;     /* 18px - sous-titres */
+  --text-xl: 1.25rem;      /* 20px - titres de carte */
+  --text-2xl: 1.5rem;      /* 24px - titres de page */
+  --text-3xl: 2rem;        /* 32px - hero numbers */
+
+  /* ──────────────────────────────────────────────────
+     BORDER RADIUS
+     ────────────────────────────────────────────────── */
+  --radius-sm: 0.375rem;   /* 6px - inputs, badges */
+  --radius-md: 0.5rem;     /* 8px - cartes */
+  --radius-lg: 0.75rem;    /* 12px - modals */
+
+  /* ──────────────────────────────────────────────────
+     TRANSITIONS
+     ────────────────────────────────────────────────── */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-
-  /* Palette de couleurs personnalisée */
-  --color-primary: var(--primary-blue);
-  --color-secondary: var(--secondary-blue);
-  --color-accent: var(--accent-teal);
-  --color-gray-dark: var(--dark-gray);
-  --color-gray-light: var(--light-gray);
-
-  /* Typographie */
-  --font-sans: var(--font-lato);
-  --font-mono: var(--font-roboto);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-surface-base: var(--surface-base);
+  --color-surface-card: var(--surface-card);
+  --color-institutional: var(--institutional);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-lato), 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-weight: 400;
+  background: var(--surface-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-weight: var(--font-normal);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Styles globaux Internat de Sourdun */
+/* ──────────────────────────────────────────────────
+   TYPOGRAPHIE
+   ────────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
-  color: var(--dark-gray);
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+  line-height: 1.2;
 }
 
+h1 { font-size: var(--text-3xl); }
+h2 { font-size: var(--text-2xl); }
+h3 { font-size: var(--text-xl); }
+
+/* ──────────────────────────────────────────────────
+   COMPOSANTS UTILITAIRES
+   ────────────────────────────────────────────────── */
+
+/* Bouton primaire institutionnel */
 .btn-primary {
-  background-color: var(--primary-blue);
-  color: var(--white);
-  text-transform: uppercase;
-  border-radius: 0.375rem;
-  padding: 0.75rem 1.5rem;
-  font-weight: 700;
-  transition: all 0.3s ease;
+  background-color: var(--institutional);
+  color: var(--text-inverse);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: all var(--transition-base);
+  cursor: pointer;
 }
 
-.btn-primary:hover {
-  background-color: var(--secondary-blue);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 6px rgba(12, 113, 195, 0.2);
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--institutional-hover);
 }
 
-.card {
-  background-color: var(--light-gray);
-  border-radius: 0.5rem;
-  padding: 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.btn-primary:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.btn-primary:disabled {
+  background-color: var(--border-emphasis);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* Bouton secondaire */
+.btn-secondary {
+  background-color: var(--surface-card);
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-standard);
+  transition: all var(--transition-base);
+  cursor: pointer;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--control-bg-hover);
+  border-color: var(--border-emphasis);
+}
+
+/* Carte registre */
+.card-registre {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  transition: border-color var(--transition-fast);
+}
+
+.card-registre:hover {
+  border-color: var(--border-standard);
+}
+
+/* Input administratif */
+.input-admin {
+  width: 100%;
+  background-color: var(--control-bg);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.input-admin::placeholder {
+  color: var(--text-muted);
+}
+
+.input-admin:hover:not(:disabled) {
+  background-color: var(--control-bg-hover);
+}
+
+.input-admin:focus {
+  outline: none;
+  border-color: var(--control-border-focus);
+  box-shadow: 0 0 0 3px var(--institutional-light);
+}
+
+.input-admin:disabled {
+  background-color: var(--control-bg-hover);
+  color: var(--text-muted);
+  cursor: not-allowed;
 }

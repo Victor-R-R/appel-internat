@@ -4,17 +4,64 @@ interface AppelStatsProps {
 }
 
 export function AppelStats({ total, presents }: AppelStatsProps) {
+  const absents = total - presents
+
   return (
     <div className="grid grid-cols-2 gap-4">
-      <div className="rounded-lg bg-white p-4 shadow">
-        <p className="text-sm font-medium text-gray-500">Total élèves</p>
-        <p className="mt-1 text-2xl font-bold text-gray-900">{total}</p>
-      </div>
-      <div className="rounded-lg bg-white p-4 shadow">
-        <p className="text-sm font-medium text-gray-500">Présents</p>
-        <p className="mt-1 text-2xl font-bold" style={{ color: '#7EBEC5' }}>
-          {presents}
+      {/* Total élèves */}
+      <div
+        className="p-4"
+        style={{
+          backgroundColor: 'var(--surface-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-md)',
+        }}
+      >
+        <p
+          className="text-xs font-medium uppercase tracking-wide"
+          style={{ color: 'var(--text-tertiary)' }}
+        >
+          Total élèves
         </p>
+        <p
+          className="mt-1 text-3xl font-bold"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          {total}
+        </p>
+      </div>
+
+      {/* Présents */}
+      <div
+        className="p-4"
+        style={{
+          backgroundColor: 'var(--surface-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 'var(--radius-md)',
+        }}
+      >
+        <p
+          className="text-xs font-medium uppercase tracking-wide"
+          style={{ color: 'var(--text-tertiary)' }}
+        >
+          Présents
+        </p>
+        <div className="mt-1 flex items-baseline gap-2">
+          <p
+            className="text-3xl font-bold"
+            style={{ color: 'var(--success)' }}
+          >
+            {presents}
+          </p>
+          {absents > 0 && (
+            <span
+              className="text-sm font-medium"
+              style={{ color: 'var(--error)' }}
+            >
+              ({absents} absent{absents > 1 ? 's' : ''})
+            </span>
+          )}
+        </div>
       </div>
     </div>
   )
