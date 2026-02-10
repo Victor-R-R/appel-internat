@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
     // Date du jour ou date fournie
     const date = normalizeDate(dateParam || undefined)
 
-    // Récupérer les appels existants pour ce niveau et cette date
-    const appels = await findByNiveauAndDate(niveau as Niveau, date)
+    // Récupérer les appels existants pour ce niveau, cette date et ce groupe
+    const appels = await findByNiveauAndDate(niveau as Niveau, date, sexeGroupe as Sexe)
 
     // Récupérer l'observation de groupe
     const observationGroupe = await findObservationGroupe(

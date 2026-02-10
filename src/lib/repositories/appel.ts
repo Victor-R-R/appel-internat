@@ -7,14 +7,20 @@ import { APPEL_INCLUDE_FULL, APPEL_INCLUDE_MINIMAL } from '@/lib/prisma-selects'
 import type { Niveau, Sexe, Statut } from '@/lib/constants'
 
 /**
- * Trouve les appels par niveau et date
+ * Trouve les appels par niveau, date et sexe de groupe
  * Utilisé pour récupérer l'appel existant du jour
  */
-export async function findByNiveauAndDate(niveau: Niveau, date: Date) {
+export async function findByNiveauAndDate(niveau: Niveau, date: Date, sexeGroupe?: Sexe) {
   return prisma.appel.findMany({
     where: {
       niveau,
       date,
+      // Filtrer par sexe de l'élève si sexeGroupe est fourni
+      ...(sexeGroupe && {
+        eleve: {
+          sexe: sexeGroupe,
+        },
+      }),
     },
     include: APPEL_INCLUDE_MINIMAL,
     orderBy: {
@@ -65,6 +71,7 @@ export async function findWithFilters(filters: {
 /**
  * Remplace tous les appels d'un niveau pour une date
  * Utilisé lors de la sauvegarde d'un appel (delete + create)
+ * IMPORTANT: Ne supprime que les appels des élèves concernés pour préserver les appels de l'autre sexe
  */
 export async function replaceForNiveauAndDate(
   niveau: Niveau,
@@ -77,9 +84,17 @@ export async function replaceForNiveauAndDate(
 ) {
   // Transaction : supprimer les anciens appels puis créer les nouveaux
   return prisma.$transaction(async (tx) => {
-    // Supprimer les appels existants
+    // Récupérer les IDs des élèves concernés
+    const eleveIds = appels.map((appel) => appel.eleveId)
+
+    // Supprimer uniquement les appels existants des élèves concernés
+    // (permet de garder les appels des garçons si on enregistre les filles, et vice-versa)
     await tx.appel.deleteMany({
-      where: { niveau, date },
+      where: {
+        niveau,
+        date,
+        eleveId: { in: eleveIds },
+      },
     })
 
     // Créer les nouveaux appels
