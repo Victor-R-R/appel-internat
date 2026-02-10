@@ -147,9 +147,10 @@ Concepts clés:
 
 ### Border Radius
 ```css
---radius-sm: 0.375rem   /* 6px - inputs, badges */
---radius-md: 0.5rem     /* 8px - cartes */
---radius-lg: 0.75rem    /* 12px - modals */
+--radius-sm: 0.5rem     /* 8px - inputs, badges */
+--radius-md: 0.75rem    /* 12px - cartes standard */
+--radius-lg: 1rem       /* 16px - grandes cartes */
+--radius-xl: 1.25rem    /* 20px - cartes hero, modals */
 ```
 
 ### Transitions

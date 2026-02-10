@@ -61,7 +61,7 @@ export default function LoginPage() {
         style={{
           backgroundColor: 'var(--surface-card)',
           border: '1px solid var(--border-subtle)',
-          borderRadius: 'var(--radius-lg)',
+          borderRadius: 'var(--radius-xl)',
         }}
       >
         {/* Header */}
