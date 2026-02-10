@@ -42,21 +42,26 @@ Dans les internats traditionnels :
 - 💾 Sauvegarde automatique en base de données
 - 📊 Historique des appels précédents
 
-### Pour les Superadmins
+### Pour les CPE/Managers/Superadmins
 - 🔐 Dashboard d'administration complet
 - 👥 Gestion des AED (CRUD)
 - 🎓 Gestion des élèves (CRUD, archivage)
 - 📈 Statistiques globales
-- 📝 Accès à tous les récaps de tous les niveaux
+- 📝 Consultation des récaps IA de toutes les nuits
+- 📥 Export PDF des récaps (formatage professionnel)
 - 🔍 Visualisation de l'historique complet
 
+### ✅ Récemment ajouté
+- 📥 **Export PDF** - Téléchargement des récaps en PDF formaté
+- 🤖 **Récaps IA** - Génération automatique avec Claude/GPT
+- 📝 **Observations par groupe** - Par niveau et sexe
+
 ### À venir 🚀
-- 🤖 Récaps automatiques générés par IA (Claude/GPT)
 - 📧 Envoi automatique par email
 - 📊 Analytics avancés (absences récurrentes, tendances)
 - 📱 Progressive Web App (mode hors ligne)
 - 📸 Photos des élèves
-- 📤 Import/export CSV
+- 📤 Import/export CSV élèves
 
 ---
 
@@ -99,11 +104,20 @@ cd appel-internat
 npm install
 ```
 
-### 3. Configurer la base de données
+### 3. Configurer les variables d'environnement
 ```bash
 # Copier le fichier d'exemple
 cp .env.example .env
 
+# Générer un JWT secret sécurisé
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+
+# Ajouter dans .env :
+# JWT_SECRET="votre_secret_généré_ci-dessus"
+```
+
+### 4. Configurer la base de données
+```bash
 # Créer la base SQLite et appliquer les migrations
 npx prisma migrate dev
 
@@ -111,7 +125,7 @@ npx prisma migrate dev
 npx prisma generate
 ```
 
-### 4. Créer les données de test
+### 5. Créer les données de test
 ```bash
 npm run seed
 ```
@@ -121,7 +135,7 @@ Cela créera :
 - 3 AED : `aed.6eme@internat.fr`, `aed.5eme@internat.fr`, `aed.term@internat.fr` / `password123`
 - 5 élèves de 6ème
 
-### 5. Lancer le serveur de développement
+### 6. Lancer le serveur de développement
 ```bash
 npm run dev
 ```
@@ -207,10 +221,11 @@ Recap (récaps générés par IA)
 ## 🔐 Sécurité
 
 - ✅ Mots de passe hashés avec **bcrypt** (10 rounds)
+- ✅ JWT authentication avec secret sécurisé (128 caractères)
 - ✅ Validation des rôles côté serveur
 - ✅ Variables sensibles dans `.env` (pas commité)
 - ✅ Protection CSRF intégrée Next.js
-- ⚠️ **Pour production** : Ajouter JWT ou NextAuth.js pour sessions sécurisées
+- ✅ Sessions sécurisées avec tokens JWT
 
 ---
 
@@ -252,17 +267,19 @@ Voir [CONTRIBUTING.md](./CONTRIBUTING.md) pour plus de détails.
 
 ## 📝 Roadmap
 
-- [x] Authentification AED/Superadmin
-- [x] Page d'appel avec statuts
-- [x] Sauvegarde en base de données
+- [x] Authentification AED/CPE/Manager/Superadmin avec JWT
+- [x] Page d'appel avec statuts (Présent/ACF/Absent)
+- [x] Observations par groupe (niveau + sexe)
+- [x] Sauvegarde en base de données PostgreSQL
 - [x] Dashboard administrateur
-- [ ] Gestion CRUD des AED
-- [ ] Gestion CRUD des élèves
-- [ ] Récaps automatiques avec IA (Claude/GPT)
-- [ ] Envoi email automatique
-- [ ] Historique et statistiques
+- [x] Gestion CRUD des AED
+- [x] Gestion CRUD des élèves
+- [x] Récaps automatiques avec IA (Claude/GPT)
+- [x] Export PDF des récaps (formatage professionnel)
+- [ ] Envoi email automatique des récaps
+- [ ] Historique et statistiques avancées
 - [ ] Mode hors ligne (PWA)
-- [ ] Import/export CSV
+- [ ] Import/export CSV élèves
 - [ ] Photos des élèves
 - [ ] Multi-langue (FR/EN)
 
