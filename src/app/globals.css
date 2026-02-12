@@ -240,3 +240,27 @@ h3 { font-size: var(--text-xl); }
   color: var(--text-muted);
   cursor: not-allowed;
 }
+
+/* ──────────────────────────────────────────────────
+   FIX: Widget date natif sur mobile
+   Forcer les pseudo-elements WebKit à respecter les contraintes de largeur
+   ────────────────────────────────────────────────── */
+input[type="date"] {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Pseudo-element éditeur de date (affiche la date) */
+input[type="date"]::-webkit-datetime-edit {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  padding-inline-start: 0 !important;
+  padding-inline-end: 0 !important;
+}
+
+/* Pseudo-element indicateur calendrier (icône) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  min-width: 0 !important;
+  flex-shrink: 1 !important;
+  margin-inline-start: auto !important;
+}
