@@ -122,17 +122,9 @@ export default function AppelPage() {
         // Charger l'observation du groupe
         setGroupObservation(appelData.observation || '')
       } else {
-        // Pas d'appel existant : initialiser à "present" par défaut
+        // Pas d'appel existant : ne rien initialiser (commence à 0)
         setAppelExists(false)
-
-        const initialAppels: Record<string, AppelData> = {}
-        elevesData.eleves.forEach((eleve: EleveDTO) => {
-          initialAppels[eleve.id] = {
-            eleveId: eleve.id,
-            statut: 'present',
-          }
-        })
-        setAppels(initialAppels)
+        setAppels({})
 
         // Charger l'observation du groupe (peut exister même si pas d'appels)
         setGroupObservation(appelData.observation || '')
