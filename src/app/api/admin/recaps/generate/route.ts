@@ -29,14 +29,10 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Génération récap] Date: ${targetDate.toISOString()}`)
 
-    // Récupérer toutes les observations de groupe pour cette date
+    // Récupérer toutes les observations de groupe pour cette date (même vides pour afficher RAS)
     const observationsGroupes = await prisma.observationGroupe.findMany({
       where: {
         date: targetDate,
-        AND: [
-          { observation: { not: null } },
-          { observation: { not: '' } },
-        ],
       },
       orderBy: [
         { niveau: 'asc' },
@@ -44,22 +40,51 @@ export async function POST(request: NextRequest) {
       ],
     })
 
-    if (observationsGroupes.length === 0) {
-      console.log('[Génération récap] Aucune observation trouvée')
-      return apiError('Aucune observation trouvée pour cette date', 404)
+    // Récupérer les absences pour cette date, groupées par niveau et sexe
+    const absences = await prisma.appel.findMany({
+      where: {
+        date: targetDate,
+        statut: 'absent',
+      },
+      include: {
+        eleve: true,
+      },
+      orderBy: [
+        { niveau: 'asc' },
+        { eleve: { sexe: 'asc' } },
+        { eleve: { nom: 'asc' } },
+      ],
+    })
+
+    if (observationsGroupes.length === 0 && absences.length === 0) {
+      console.log('[Génération récap] Aucune donnée trouvée')
+      return apiError('Aucune donnée trouvée pour cette date', 404)
     }
 
-    console.log(`[Génération récap] ${observationsGroupes.length} observation(s) de groupe trouvée(s)`)
+    console.log(`[Génération récap] ${observationsGroupes.length} groupe(s) trouvé(s), ${absences.length} absence(s)`)
 
-    // Formater les observations pour l'IA
+    // Formater les observations pour l'IA (inclure "RAS" si vide)
     const observationsFormatted = observationsGroupes.map((obs) => ({
       niveau: obs.niveau,
       sexeGroupe: obs.sexeGroupe,
-      observation: obs.observation!,
+      observation: obs.observation && obs.observation.trim() !== '' ? obs.observation : 'RAS',
     }))
 
+    // Grouper les absences par niveau et sexe
+    const absencesParGroupe: Record<string, Array<{ nom: string; prenom: string }>> = {}
+    absences.forEach((appel) => {
+      const key = `${appel.niveau}-${appel.eleve.sexe}`
+      if (!absencesParGroupe[key]) {
+        absencesParGroupe[key] = []
+      }
+      absencesParGroupe[key].push({
+        nom: appel.eleve.nom,
+        prenom: appel.eleve.prenom,
+      })
+    })
+
     // Générer le contenu avec IA
-    const contenu = await genererRecapAvecIA(observationsFormatted, targetDate)
+    const contenu = await genererRecapAvecIA(observationsFormatted, absencesParGroupe, targetDate)
 
     // Vérifier si un récap existe déjà pour cette date
     const existingRecap = await prisma.recap.findUnique({

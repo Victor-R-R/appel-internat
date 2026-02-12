@@ -378,29 +378,90 @@ export default function RecapsPage() {
 
             {currentRecap ? (
               <div>
+                {/* Contenu du récap avec style registre */}
                 <div
-                  className="mb-4 whitespace-pre-wrap p-4 text-sm"
+                  className="mb-4"
                   style={{
                     backgroundColor: 'var(--surface-base)',
-                    color: 'var(--text-secondary)',
+                    border: '1px solid var(--border-subtle)',
                     borderRadius: 'var(--radius-sm)',
                   }}
                 >
-                  {currentRecap.contenu}
-                </div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p
-                    className="text-xs"
-                    style={{ color: 'var(--text-tertiary)' }}
+                  {/* Affichage structuré du récap */}
+                  <div
+                    className="whitespace-pre-wrap p-4 text-sm leading-relaxed"
+                    style={{
+                      color: 'var(--text-secondary)',
+                    }}
                   >
-                    Généré le {new Date(currentRecap.createdAt).toLocaleDateString('fr-FR')} à{' '}
-                    {new Date(currentRecap.createdAt).toLocaleTimeString('fr-FR')}
-                  </p>
+                    {currentRecap.contenu.split('\n').map((line, index) => {
+                      // Identifier les lignes spéciales pour styling
+                      const isMainTitle = line.startsWith('📊')
+                      const isLevelTitle = line.startsWith('🎓')
+                      const isWarning = line.includes('⚠️')
+                      const isPositive = line.includes('✅') || line.includes('🟢')
+                      const isAbsent = line.includes('Absents')
+                      const isEmpty = line.trim() === ''
+
+                      if (isEmpty) {
+                        return <div key={index} style={{ height: '8px' }} />
+                      }
+
+                      // Calculer le paddingLeft en fonction des conditions
+                      const getPaddingLeft = () => {
+                        if (isWarning || isAbsent || isPositive) return 'var(--space-md)'
+                        if (line.startsWith('  ')) return 'var(--space-lg)'
+                        if (line.startsWith('•')) return 'var(--space-md)'
+                        return '0'
+                      }
+
+                      return (
+                        <div
+                          key={index}
+                          style={{
+                            marginBottom: isMainTitle || isLevelTitle ? 'var(--space-sm)' : '4px',
+                            paddingLeft: getPaddingLeft(),
+                            fontWeight: isMainTitle || isLevelTitle ? 'var(--font-semibold)' : 'var(--font-normal)',
+                            color: isMainTitle
+                              ? 'var(--text-primary)'
+                              : isLevelTitle
+                              ? 'var(--institutional)'
+                              : isWarning || isAbsent
+                              ? 'var(--warning)'
+                              : isPositive
+                              ? 'var(--success)'
+                              : 'var(--text-secondary)',
+                            fontSize: isMainTitle || isLevelTitle ? 'var(--text-base)' : 'var(--text-sm)',
+                            borderLeft: isWarning || isAbsent ? '3px solid var(--warning-light)' : isPositive ? '3px solid var(--success-light)' : 'none',
+                          }}
+                        >
+                          {line || '\u00A0'}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Footer avec métadonnées et actions */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-1">
+                    <p
+                      className="text-xs"
+                      style={{ color: 'var(--text-tertiary)' }}
+                    >
+                      Généré le {new Date(currentRecap.createdAt).toLocaleDateString('fr-FR')} à{' '}
+                      {new Date(currentRecap.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={handleExportPDF}
                       disabled={exporting}
                       className="btn-primary flex items-center gap-1.5 px-3 py-1.5 text-xs"
+                      style={{
+                        backgroundColor: exporting ? 'var(--border-emphasis)' : undefined,
+                        cursor: exporting ? 'not-allowed' : 'pointer',
+                      }}
                     >
                       {exporting ? (
                         <>
@@ -418,6 +479,10 @@ export default function RecapsPage() {
                       onClick={() => handleGenerateRecap(selectedDate)}
                       disabled={generating}
                       className="btn-secondary flex items-center gap-1.5 px-3 py-1.5 text-xs"
+                      style={{
+                        opacity: generating ? 0.6 : 1,
+                        cursor: generating ? 'not-allowed' : 'pointer',
+                      }}
                     >
                       {generating ? (
                         <>
