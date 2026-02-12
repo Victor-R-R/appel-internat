@@ -192,7 +192,7 @@ export default function HistoriqueAppelsPage() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3] sm:px-4 sm:text-base"
+                className="w-full min-w-0 rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3] sm:px-4 sm:text-base"
               />
             </div>
 
