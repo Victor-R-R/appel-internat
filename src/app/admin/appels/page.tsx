@@ -199,11 +199,11 @@ export default function HistoriqueAppelsPage() {
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Filtres */}
-        <div className="mb-6 overflow-hidden rounded-lg bg-white p-6 shadow">
+        <div className="card-registre mb-6">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {/* Filtre Date */}
             <div className="min-w-0">
-              <label className="mb-2 block text-sm font-medium text-gray-700">
+              <label className="mb-2 block text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
                 📅 Date
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -211,7 +211,8 @@ export default function HistoriqueAppelsPage() {
                 <select
                   value={parseInt(day)}
                   onChange={(e) => handleDatePartChange('day', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                  className="input-admin text-sm"
+                  style={{ padding: 'var(--space-sm)' }}
                 >
                   {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
                     <option key={d} value={d}>
@@ -224,7 +225,8 @@ export default function HistoriqueAppelsPage() {
                 <select
                   value={parseInt(month)}
                   onChange={(e) => handleDatePartChange('month', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                  className="input-admin text-sm"
+                  style={{ padding: 'var(--space-sm)' }}
                 >
                   {[
                     'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
@@ -240,7 +242,8 @@ export default function HistoriqueAppelsPage() {
                 <select
                   value={parseInt(year)}
                   onChange={(e) => handleDatePartChange('year', e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                  className="input-admin text-sm"
+                  style={{ padding: 'var(--space-sm)' }}
                 >
                   {Array.from({ length: 10 }, (_, i) => 2026 - i).map((y) => (
                     <option key={y} value={y}>
@@ -253,7 +256,7 @@ export default function HistoriqueAppelsPage() {
 
             {/* Filtre Niveau */}
             <div className="min-w-0">
-              <label className="mb-2 block text-sm font-medium text-gray-700">
+              <label className="mb-2 block text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
                 🎓 Niveau
               </label>
               <NiveauSelect
@@ -266,21 +269,20 @@ export default function HistoriqueAppelsPage() {
                   }
                 }}
                 includeAll={true}
-                className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                className="input-admin"
               />
             </div>
 
             {/* Filtre Sexe - Apparaît uniquement si un niveau spécifique est sélectionné */}
             {selectedNiveau !== 'tous' && (
               <div className="min-w-0">
-                <label className="mb-2 block text-sm font-medium text-gray-700">
+                <label className="mb-2 block text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
                   👥 Groupe
                 </label>
                 <select
                   value={selectedSexe}
                   onChange={(e) => setSelectedSexe(e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
-                  style={{ borderColor: '#0C71C3' }}
+                  className="input-admin"
                 >
                   <option value="tous">👥 Tous (Filles + Garçons)</option>
                   <option value="F">👧 Filles</option>
@@ -291,7 +293,7 @@ export default function HistoriqueAppelsPage() {
 
             {/* Recherche élève */}
             <div className="min-w-0">
-              <label className="mb-2 block text-sm font-medium text-gray-700">
+              <label className="mb-2 block text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
                 🔍 Rechercher un élève
               </label>
               <input
@@ -299,14 +301,14 @@ export default function HistoriqueAppelsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Nom ou prénom..."
-                className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                className="input-admin"
               />
             </div>
           </div>
 
           {/* Afficher le nombre de résultats si recherche active */}
           {searchQuery && (
-            <div className="mt-4 text-sm text-gray-600">
+            <div className="mt-4 text-sm" style={{ color: 'var(--text-tertiary)' }}>
               {getTotalResults()} résultat(s) trouvé(s) pour &ldquo;{searchQuery}&rdquo;
             </div>
           )}
@@ -314,8 +316,8 @@ export default function HistoriqueAppelsPage() {
 
         {/* Liste des groupes d'appels */}
         {getFilteredGroups().length === 0 ? (
-          <div className="rounded-lg bg-white p-12 text-center shadow">
-            <p className="text-gray-500">Aucun appel trouvé pour les filtres sélectionnés</p>
+          <div className="card-registre p-12 text-center">
+            <p style={{ color: 'var(--text-tertiary)' }}>Aucun appel trouvé pour les filtres sélectionnés</p>
           </div>
         ) : (
           <div className="space-y-6">
@@ -325,12 +327,23 @@ export default function HistoriqueAppelsPage() {
               return (
                 <div
                   key={index}
-                  className="overflow-hidden rounded-lg bg-white shadow"
+                  className="card-registre overflow-hidden"
+                  style={{ padding: 0 }}
                 >
                   {/* En-tête du groupe - Cliquable */}
                   <div
                     onClick={() => toggleGroup(index)}
-                    className="cursor-pointer bg-gradient-to-r from-[#0C71C3] to-[#4d8dc1] px-6 py-4 text-white transition-all hover:from-[#0b65b0] hover:to-[#4380af]"
+                    className="cursor-pointer px-6 py-4 transition-all"
+                    style={{
+                      backgroundColor: 'var(--surface-institutional)',
+                      color: 'var(--text-inverse)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--institutional-hover)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--surface-institutional)'
+                    }}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
@@ -350,13 +363,31 @@ export default function HistoriqueAppelsPage() {
                         </div>
                       </div>
                       <div className="flex gap-3">
-                        <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium">
+                        <span
+                          className="rounded-full px-3 py-1 text-sm font-medium"
+                          style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)'
+                          }}
+                        >
                           ✓ {stats.presents} Présent(s)
                         </span>
-                        <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium">
+                        <span
+                          className="rounded-full px-3 py-1 text-sm font-medium"
+                          style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)'
+                          }}
+                        >
                           ACF {stats.acf}
                         </span>
-                        <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium">
+                        <span
+                          className="rounded-full px-3 py-1 text-sm font-medium"
+                          style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                            border: '1px solid rgba(255, 255, 255, 0.2)'
+                          }}
+                        >
                           ✗ {stats.absents} Absent(s)
                         </span>
                       </div>
@@ -364,8 +395,14 @@ export default function HistoriqueAppelsPage() {
 
                     {/* Observation du groupe */}
                     {group.observation && (
-                      <div className="mt-3 rounded-md bg-white/10 px-4 py-3 backdrop-blur-sm">
-                        <p className="text-sm font-medium opacity-90">
+                      <div
+                        className="mt-3 rounded-md px-4 py-3"
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          border: '1px solid rgba(255, 255, 255, 0.15)'
+                        }}
+                      >
+                        <p className="text-sm font-medium" style={{ opacity: 0.9 }}>
                           📝 Observations du groupe :
                         </p>
                         <p className="mt-1 text-sm italic">
@@ -377,19 +414,23 @@ export default function HistoriqueAppelsPage() {
 
                   {/* Liste des appels - Affichée uniquement si expanded */}
                   {isExpanded && (
-                    <div className="divide-y divide-gray-200">
-                      {group.appels.map((appel) => (
+                    <div>
+                      {group.appels.map((appel, appelIndex) => (
                         <div
                           key={appel.id}
-                          className={`px-6 py-4 ${appel.statut === 'absent' ? 'bg-red-50' : ''}`}
+                          className="px-6 py-4"
+                          style={{
+                            backgroundColor: appel.statut === 'absent' ? 'var(--error-light)' : 'var(--surface-card)',
+                            borderTop: appelIndex > 0 ? '1px solid var(--border-subtle)' : 'none',
+                          }}
                         >
                           <div className="flex items-center justify-between">
                             {/* Infos élève */}
                             <div>
-                              <p className="font-medium text-gray-900">
+                              <p className="font-medium" style={{ color: 'var(--text-primary)' }}>
                                 {appel.eleve.nom} {appel.eleve.prenom}
                               </p>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
                                 {appel.eleve.sexe === 'M' ? 'Garçon' : 'Fille'}
                               </p>
                             </div>
