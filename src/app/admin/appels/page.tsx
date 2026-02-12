@@ -54,6 +54,24 @@ export default function HistoriqueAppelsPage() {
   const [selectedSexe, setSelectedSexe] = useState<string>('tous')
   const [searchQuery, setSearchQuery] = useState<string>('')
 
+  // Extraire jour, mois, année depuis selectedDate
+  const [year, month, day] = selectedDate.split('-')
+
+  // Handler pour mettre à jour les parties de la date
+  const handleDatePartChange = (part: 'day' | 'month' | 'year', value: string) => {
+    const [currentYear, currentMonth, currentDay] = selectedDate.split('-')
+
+    let newYear = currentYear
+    let newMonth = currentMonth
+    let newDay = currentDay
+
+    if (part === 'day') newDay = value.padStart(2, '0')
+    if (part === 'month') newMonth = value.padStart(2, '0')
+    if (part === 'year') newYear = value
+
+    setSelectedDate(`${newYear}-${newMonth}-${newDay}`)
+  }
+
   useEffect(() => {
     if (authLoading) return
 
@@ -188,14 +206,49 @@ export default function HistoriqueAppelsPage() {
               <label className="mb-2 block text-sm font-medium text-gray-700">
                 📅 Date
               </label>
-              <input
-                type="text"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                placeholder="2026-02-12"
-                pattern="\d{4}-\d{2}-\d{2}"
-                className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
-              />
+              <div className="grid grid-cols-3 gap-2">
+                {/* Jour */}
+                <select
+                  value={parseInt(day)}
+                  onChange={(e) => handleDatePartChange('day', e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                >
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Mois */}
+                <select
+                  value={parseInt(month)}
+                  onChange={(e) => handleDatePartChange('month', e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                >
+                  {[
+                    'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
+                    'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'
+                  ].map((m, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Année */}
+                <select
+                  value={parseInt(year)}
+                  onChange={(e) => handleDatePartChange('year', e.target.value)}
+                  className="w-full rounded-md border border-gray-300 px-2 py-2 text-sm text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                >
+                  {Array.from({ length: 10 }, (_, i) => 2026 - i).map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Filtre Niveau */}
