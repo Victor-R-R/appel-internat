@@ -29,7 +29,31 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Génération récap] Date: ${targetDate.toISOString()}`)
 
-    // Récupérer toutes les observations de groupe pour cette date (même vides pour afficher RAS)
+    // Récupérer tous les appels de cette date pour identifier les groupes actifs
+    const appels = await prisma.appel.findMany({
+      where: {
+        date: targetDate,
+      },
+      include: {
+        eleve: true,
+      },
+    })
+
+    if (appels.length === 0) {
+      console.log('[Génération récap] Aucun appel trouvé pour cette date')
+      return apiError('Aucun appel trouvé pour cette date', 404)
+    }
+
+    // Identifier tous les groupes (niveau + sexe) qui ont fait l'appel
+    const groupesActifs = new Set<string>()
+    appels.forEach((appel) => {
+      const key = `${appel.niveau}-${appel.eleve.sexe}`
+      groupesActifs.add(key)
+    })
+
+    console.log(`[Génération récap] ${groupesActifs.size} groupe(s) actif(s) identifié(s)`)
+
+    // Récupérer toutes les observations de groupe pour cette date
     const observationsGroupes = await prisma.observationGroupe.findMany({
       where: {
         date: targetDate,
@@ -40,35 +64,45 @@ export async function POST(request: NextRequest) {
       ],
     })
 
-    // Récupérer les absences pour cette date, groupées par niveau et sexe
-    const absences = await prisma.appel.findMany({
-      where: {
-        date: targetDate,
-        statut: 'absent',
-      },
-      include: {
-        eleve: true,
-      },
-      orderBy: [
-        { niveau: 'asc' },
-        { eleve: { sexe: 'asc' } },
-        { eleve: { nom: 'asc' } },
-      ],
+    // Créer un map des observations existantes
+    const observationsMap = new Map<string, string>()
+    observationsGroupes.forEach((obs) => {
+      const key = `${obs.niveau}-${obs.sexeGroupe}`
+      observationsMap.set(key, obs.observation || 'RAS')
     })
 
-    if (observationsGroupes.length === 0 && absences.length === 0) {
-      console.log('[Génération récap] Aucune donnée trouvée')
-      return apiError('Aucune donnée trouvée pour cette date', 404)
-    }
+    // Récupérer les absences pour cette date, groupées par niveau et sexe
+    const absences = appels.filter((appel) => appel.statut === 'absent')
 
-    console.log(`[Génération récap] ${observationsGroupes.length} groupe(s) trouvé(s), ${absences.length} absence(s)`)
+    console.log(`[Génération récap] ${observationsGroupes.length} observation(s) trouvée(s), ${absences.length} absence(s)`)
 
-    // Formater les observations pour l'IA (inclure "RAS" si vide)
-    const observationsFormatted = observationsGroupes.map((obs) => ({
-      niveau: obs.niveau,
-      sexeGroupe: obs.sexeGroupe,
-      observation: obs.observation && obs.observation.trim() !== '' ? obs.observation : 'RAS',
-    }))
+    // Formater les observations pour l'IA - inclure TOUS les groupes actifs
+    const observationsFormatted: Array<{ niveau: string; sexeGroupe: string; observation: string }> = []
+
+    groupesActifs.forEach((groupeKey) => {
+      const [niveau, sexeGroupe] = groupeKey.split('-')
+      const observation = observationsMap.get(groupeKey) || 'RAS'
+
+      // Ajouter seulement si l'observation n'est pas vide OU s'il y a des absences
+      const key = `${niveau}-${sexeGroupe}`
+      const hasAbsences = absences.some((a) => a.niveau === niveau && a.eleve.sexe === sexeGroupe)
+
+      // Toujours inclure le groupe (même si RAS)
+      observationsFormatted.push({
+        niveau,
+        sexeGroupe,
+        observation: observation.trim() !== '' ? observation : 'RAS',
+      })
+    })
+
+    // Trier les observations par niveau
+    const niveauxOrdre = ['6eme', '5eme', '4eme', '3eme', '2nde', '1ere', 'terminale']
+    observationsFormatted.sort((a, b) => {
+      const indexA = niveauxOrdre.indexOf(a.niveau)
+      const indexB = niveauxOrdre.indexOf(b.niveau)
+      if (indexA !== indexB) return indexA - indexB
+      return a.sexeGroupe.localeCompare(b.sexeGroupe)
+    })
 
     // Grouper les absences par niveau et sexe
     const absencesParGroupe: Record<string, Array<{ nom: string; prenom: string }>> = {}
@@ -81,6 +115,11 @@ export async function POST(request: NextRequest) {
         nom: appel.eleve.nom,
         prenom: appel.eleve.prenom,
       })
+    })
+
+    // Trier les absences par nom
+    Object.keys(absencesParGroupe).forEach((key) => {
+      absencesParGroupe[key].sort((a, b) => a.nom.localeCompare(b.nom))
     })
 
     // Générer le contenu avec IA
