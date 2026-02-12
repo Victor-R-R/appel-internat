@@ -184,7 +184,7 @@ export default function HistoriqueAppelsPage() {
         <div className="mb-6 overflow-hidden rounded-lg bg-white p-6 shadow">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {/* Filtre Date */}
-            <div className="min-w-0 overflow-hidden">
+            <div className="min-w-0">
               <label className="mb-2 block text-sm font-medium text-gray-700">
                 📅 Date
               </label>
@@ -192,12 +192,12 @@ export default function HistoriqueAppelsPage() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="min-w-0 w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
               />
             </div>
 
             {/* Filtre Niveau */}
-            <div>
+            <div className="min-w-0">
               <label className="mb-2 block text-sm font-medium text-gray-700">
                 🎓 Niveau
               </label>
@@ -217,7 +217,7 @@ export default function HistoriqueAppelsPage() {
 
             {/* Filtre Sexe - Apparaît uniquement si un niveau spécifique est sélectionné */}
             {selectedNiveau !== 'tous' && (
-              <div>
+              <div className="min-w-0">
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   👥 Groupe
                 </label>
@@ -235,7 +235,7 @@ export default function HistoriqueAppelsPage() {
             )}
 
             {/* Recherche élève */}
-            <div>
+            <div className="min-w-0">
               <label className="mb-2 block text-sm font-medium text-gray-700">
                 🔍 Rechercher un élève
               </label>
