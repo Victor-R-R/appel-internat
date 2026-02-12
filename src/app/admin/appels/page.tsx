@@ -181,10 +181,10 @@ export default function HistoriqueAppelsPage() {
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Filtres */}
-        <div className="mb-6 rounded-lg bg-white p-6 shadow">
+        <div className="mb-6 overflow-hidden rounded-lg bg-white p-6 shadow">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
             {/* Filtre Date */}
-            <div>
+            <div className="min-w-0">
               <label className="mb-2 block text-sm font-medium text-gray-700">
                 📅 Date
               </label>
