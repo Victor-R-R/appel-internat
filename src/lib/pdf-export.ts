@@ -60,7 +60,7 @@ function parseRecapContent(content: string): Array<{
       parsed.push({ type: 'niveau', text: cleanLine })
     }
     // Identifier les groupes (Filles:, Garçons:)
-    else if (/^(Filles?|Garcons?)\s*:/i.test(cleanLine)) {
+    else if (/^(Filles?|Gar[cç]ons?)\s*:/i.test(cleanLine)) {
       parsed.push({ type: 'groupe', text: cleanLine, indent: 1 })
     }
     // Texte normal
