@@ -189,10 +189,12 @@ export default function HistoriqueAppelsPage() {
                 📅 Date
               </label>
               <input
-                type="date"
+                type="text"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="min-w-0 max-w-full w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
+                placeholder="2026-02-12"
+                pattern="\d{4}-\d{2}-\d{2}"
+                className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:border-[#0C71C3] focus:outline-none focus:ring-1 focus:ring-[#0C71C3]"
               />
             </div>
 
