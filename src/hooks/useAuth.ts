@@ -1,48 +1,44 @@
 /**
  * Hook personnalisé pour gérer l'authentification côté client
- * Récupère les infos utilisateur depuis le JWT cookie via /api/auth/me
+ * Utilise SWR pour deduplication automatique et caching
  */
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import useSWR from 'swr'
+import { fetcher } from '@/lib/fetcher'
 import type { UserDTO } from '@/lib/types'
 
 export function useAuth(options?: { redirectTo?: string; requireAuth?: boolean }) {
-  const [user, setUser] = useState<UserDTO | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const res = await fetch('/api/auth/me')
-        const data = await res.json()
-
-        if (data.success && data.user) {
-          setUser(data.user)
-        } else {
-          setUser(null)
-          // Si authentification requise et pas d'user, rediriger
-          if (options?.requireAuth && options?.redirectTo) {
-            router.push(options.redirectTo)
-          }
-        }
-      } catch (err) {
-        console.error('Erreur récupération user:', err)
-        setError('Erreur de connexion')
-        setUser(null)
-      } finally {
-        setLoading(false)
-      }
+  // SWR déduplique automatiquement les appels multiples à /api/auth/me
+  const { data, error, isLoading } = useSWR<{ success: boolean; user: UserDTO }>(
+    '/api/auth/me',
+    fetcher,
+    {
+      revalidateOnFocus: false, // Ne pas revalider au focus (évite les appels inutiles)
+      revalidateOnReconnect: true, // Revalider à la reconnexion
+      dedupingInterval: 5000, // Déduplique les appels pendant 5s
     }
+  )
 
-    fetchUser()
-  }, [router, options?.requireAuth, options?.redirectTo])
+  const user = data?.user || null
 
-  return { user, loading, error, setUser }
+  useEffect(() => {
+    // Si authentification requise et pas d'user, rediriger
+    if (!isLoading && options?.requireAuth && !user && options?.redirectTo) {
+      router.push(options.redirectTo)
+    }
+  }, [isLoading, user, options?.requireAuth, options?.redirectTo, router])
+
+  return {
+    user,
+    loading: isLoading,
+    error: error ? 'Erreur de connexion' : null,
+  }
 }
 
 /**

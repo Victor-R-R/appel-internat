@@ -10,7 +10,7 @@ import { HeaderLinkButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Badge } from '@/components/ui/Badge'
 import { NiveauSelect } from '@/components/forms/NiveauSelect'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown } from '@/lib/icons'
 import type { EleveDTO, AedSlim } from '@/lib/types'
 import { NIVEAUX, ADMIN_ROLES } from '@/lib/constants'
 
