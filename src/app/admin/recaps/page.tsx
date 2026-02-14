@@ -11,7 +11,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { ADMIN_ROLES } from '@/lib/constants'
 import { formatDateForAPI } from '@/lib/format'
 import { exportRecapToPDF } from '@/lib/pdf-export'
-import { Download, RotateCw, Loader2, FileText } from 'lucide-react'
+import { Download, RotateCw, Loader2, FileText } from '@/lib/icons'
 
 type Recap = {
   id: string

@@ -12,7 +12,7 @@ import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { NiveauSelect } from '@/components/forms/NiveauSelect'
 import type { EleveDTO, AppelData } from '@/lib/types'
 import { ADMIN_ROLES } from '@/lib/constants'
-import { Check, X, AlertCircle, Save, GraduationCap, Users } from 'lucide-react'
+import { Check, X, AlertCircle, Save, GraduationCap, Users } from '@/lib/icons'
 
 export default function AppelPage() {
   useScrollToTop()
@@ -83,15 +83,25 @@ export default function AppelPage() {
 
   /**
    * Charger les élèves d'un niveau et sexe, et l'appel existant du jour
+   * Optimisé avec Promise.all() pour paralléliser les fetches (pas de waterfall)
    */
   const loadEleves = async (niveau: string, sexeGroupe: string) => {
     try {
       // Réinitialiser les appels pour éviter la race condition
       setAppels({})
 
-      // Charger les élèves
-      const elevesResponse = await fetch(`/api/eleves?niveau=${niveau}&sexe=${sexeGroupe}`)
-      const elevesData = await elevesResponse.json()
+      const today = new Date().toISOString().split('T')[0]
+
+      // ✅ PARALLÉLISER les deux fetches avec Promise.all()
+      const [elevesResponse, appelResponse] = await Promise.all([
+        fetch(`/api/eleves?niveau=${niveau}&sexe=${sexeGroupe}`),
+        fetch(`/api/appel?niveau=${niveau}&date=${today}&sexeGroupe=${sexeGroupe}`),
+      ])
+
+      const [elevesData, appelData] = await Promise.all([
+        elevesResponse.json(),
+        appelResponse.json(),
+      ])
 
       if (!elevesData.success) {
         console.error('Erreur chargement élèves')
@@ -99,11 +109,6 @@ export default function AppelPage() {
       }
 
       setEleves(elevesData.eleves)
-
-      // Charger l'appel existant du jour
-      const today = new Date().toISOString().split('T')[0]
-      const appelResponse = await fetch(`/api/appel?niveau=${niveau}&date=${today}&sexeGroupe=${sexeGroupe}`)
-      const appelData = await appelResponse.json()
 
       // Si un appel existe déjà aujourd'hui
       if (appelData.success && appelData.exists && appelData.appels.length > 0) {

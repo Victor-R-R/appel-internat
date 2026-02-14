@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { memo } from 'react'
 import Link from 'next/link'
+import useSWR from 'swr'
 import { useAuth, useLogout } from '@/hooks/useAuth'
 import { useScrollToTop } from '@/hooks/useScrollToTop'
 import { AdminHeader } from '@/components/ui/AdminHeader'
 import { HeaderActionButton } from '@/components/ui/HeaderButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
-import { Users, GraduationCap, BarChart3, FileText, Settings, TrendingUp, Shield } from 'lucide-react'
+import { fetcher } from '@/lib/fetcher'
+import { Users, GraduationCap, BarChart3, FileText, Settings, TrendingUp, Shield } from '@/lib/icons'
 
 type Stats = {
   totalAED: number
@@ -16,38 +18,39 @@ type Stats = {
   totalRecaps: number
 }
 
+// Hoist JSX icons pour éviter les re-créations à chaque render
+const ICONS = {
+  users: <Users className="h-6 w-6" />,
+  graduationCap: <GraduationCap className="h-6 w-6" />,
+  barChart3: <BarChart3 className="h-8 w-8" />,
+  fileText: <FileText className="h-8 w-8" />,
+  shield: <Shield className="h-8 w-8" />,
+  settings: <Settings className="h-8 w-8" />,
+  trendingUp: <TrendingUp className="h-8 w-8" />,
+} as const
+
 export default function AdminDashboard() {
   useScrollToTop()
+
+  // SWR charge user et stats EN PARALLÈLE (pas de waterfall !)
   const { user, loading: authLoading } = useAuth({
     requireAuth: true,
     redirectTo: '/login',
   })
   const logout = useLogout()
-  const [stats, setStats] = useState<Stats | null>(null)
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (user) {
-      loadStats()
+  // SWR commence à charger les stats immédiatement (pas d'attente du user)
+  const { data: statsData, isLoading: statsLoading } = useSWR<{ success: boolean; stats: Stats }>(
+    '/api/admin/stats',
+    fetcher,
+    {
+      revalidateOnFocus: false,
     }
-  }, [user])
+  )
 
-  const loadStats = async () => {
-    try {
-      const response = await fetch('/api/admin/stats')
-      const data = await response.json()
+  const stats = statsData?.stats
 
-      if (data.success) {
-        setStats(data.stats)
-      }
-    } catch (error) {
-      console.error('Erreur chargement stats:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (authLoading || loading) {
+  if (authLoading || statsLoading) {
     return <LoadingSpinner />
   }
 
@@ -75,12 +78,12 @@ export default function AdminDashboard() {
           <StatCard
             title="AED"
             value={stats?.totalAED || 0}
-            icon={<Users className="h-6 w-6" />}
+            icon={ICONS.users}
           />
           <StatCard
             title="Élèves"
             value={stats?.totalEleves || 0}
-            icon={<GraduationCap className="h-6 w-6" />}
+            icon={ICONS.graduationCap}
           />
         </div>
 
@@ -89,14 +92,14 @@ export default function AdminDashboard() {
           <NavCard
             title="Historique des appels"
             description="Voir tous les appels effectués par niveau et date"
-            icon={<BarChart3 className="h-8 w-8" />}
+            icon={ICONS.barChart3}
             href="/admin/appels"
           />
 
           <NavCard
             title="Tous les récaps"
             description="Consulter les récapitulatifs de tous les niveaux"
-            icon={<FileText className="h-8 w-8" />}
+            icon={ICONS.fileText}
             href="/admin/recaps"
           />
 
@@ -105,28 +108,28 @@ export default function AdminDashboard() {
               <NavCard
                 title="Gérer les utilisateurs"
                 description="Ajouter, modifier ou supprimer des utilisateurs (AED, CPE, Manager)"
-                icon={<Shield className="h-8 w-8" />}
+                icon={ICONS.shield}
                 href="/admin/aed"
               />
 
               <NavCard
                 title="Gérer les élèves"
                 description="Ajouter, modifier ou archiver des élèves par niveau"
-                icon={<GraduationCap className="h-8 w-8" />}
+                icon={ICONS.graduationCap}
                 href="/admin/eleves"
               />
 
               <NavCard
                 title="Paramètres LLM"
                 description="Configurer les récaps automatiques (Claude/GPT)"
-                icon={<Settings className="h-8 w-8" />}
+                icon={ICONS.settings}
                 href="/admin/llm"
               />
 
               <NavCard
                 title="Statistiques"
                 description="Rapports et analyses détaillées"
-                icon={<TrendingUp className="h-8 w-8" />}
+                icon={ICONS.trendingUp}
                 href="/admin/stats"
               />
             </>
@@ -137,8 +140,8 @@ export default function AdminDashboard() {
   )
 }
 
-// Composant carte statistique
-function StatCard({
+// Composant carte statistique (memoïsé pour éviter les re-renders)
+const StatCard = memo(function StatCard({
   title,
   value,
   icon,
@@ -186,10 +189,10 @@ function StatCard({
       </div>
     </div>
   )
-}
+})
 
-// Composant carte de navigation
-function NavCard({
+// Composant carte de navigation (memoïsé pour éviter les re-renders)
+const NavCard = memo(function NavCard({
   title,
   description,
   icon,
@@ -241,4 +244,4 @@ function NavCard({
       </p>
     </Link>
   )
-}
+})
